@@ -20,7 +20,7 @@ contract ERC20MetaTxExtension is ERC1271Constants{
     function ensureParametersValidity(
         address _from,
         uint256 _amount,
-        uint256[4] memory params, // _nonce, _gasPrice, _gasLimit, _tokenGasPrice, _amount
+        uint256[4] memory params, // _nonce, _gasPrice, _gasLimit, _tokenGasPrice
         address _relayer,
         uint256 initialGas
     ) internal view {
