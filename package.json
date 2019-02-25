@@ -1,0 +1,39 @@
+{
+  "name": "tsb-contracts",
+  "version": "0.0.1",
+  "description": "",
+  "scripts": {
+    "solium": "solium -d src",
+    "test-asset": "mocha --delay -r rocketh/mocha --recursive asset-tests",
+    "test-localhost": "cross-env ROCKETH_NODE_URL=http://localhost:8545 yarn test",
+    "test": "tap -T test/**/test*",
+    "ganache": "ganache-cli --seed 04624df17c837dc2113f0c65554551f2 -a 21 --gasLimit 19000000",
+    "export-sand": "node export-sand.js"
+  },
+  "license": "UNLICENSED",
+  "private": true,
+  "devDependencies": {
+    "assert": "^1.4.1",
+    "babel-eslint": "^8.2.5",
+    "bn.js": "^4.11.8",
+    "copy": "^0.3.2",
+    "copy-dir": "^0.4.0",
+    "cross-env": "^5.2.0",
+    "eslint": "^5.0.1",
+    "eslint-config-babel": "^7.0.2",
+    "eslint-config-xo": "^0.23.0",
+    "eslint-plugin-babel": "^5.1.0",
+    "ganache-cli": "^6.2.3",
+    "minimist": "^1.2.0",
+    "rocketh": "0.1.10",
+    "solc": "^0.5.2",
+    "tap": "^12.1.0",
+    "web3": "1.0.0-beta.33"
+  },
+  "dependencies": {
+    "axios": "^0.18.0",
+    "dotenv": "^6.0.0",
+    "eth-sig-util": "^2.1.0",
+    "solium": "^1.1.7"
+  }
+}
