@@ -4,7 +4,6 @@ import { ERC777BaseToken } from "../ERC777BaseToken.sol";
 
 import { Ownable } from "../../../Libraries/ownership/Ownable.sol";
 
-// UNLIKELY TO BE USED // NOT TO AUDIT 
 contract ERC777WithOptionalERC20 is ERC777BaseToken, Ownable {
 
     bool internal mErc20compatible;

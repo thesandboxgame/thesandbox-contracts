@@ -5,7 +5,6 @@ import "../../Libraries/SigUtil.sol";
 import "../../Libraries/SafeMath.sol";
 import "../erc20/ERC20MetaTxExtension.sol";
 
-// NOT USED YET // BUT READY TO AUDIT
 contract ERC777MetaTxExtension is ERC20MetaTxExtension {
 
 

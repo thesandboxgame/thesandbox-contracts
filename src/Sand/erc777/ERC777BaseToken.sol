@@ -8,7 +8,6 @@ import { ERC777TokensRecipient } from "../../Interfaces/ERC777TokensRecipient.so
 import { ProxyImplementation } from "../../Libraries/ProxyImplementation.sol";
 import { ERC20BaseToken } from "../erc20/ERC20BaseToken.sol";
 
-// NOT USED YET // BUT READY TO AUDIT 
 contract ERC777BaseToken is ProxyImplementation, ERC20BaseToken, /*ERC777Token,*/ ERC777TokenEvents, ERC820Implementer {
 
     mapping(address => mapping(address => bool)) internal mAuthorizedOperators;

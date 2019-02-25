@@ -4,7 +4,6 @@ import { ERC777BaseToken } from "../ERC777BaseToken.sol";
 
 import { Ownable } from "../../../Libraries/ownership/Ownable.sol";
 
-// UNLIKELY TO BE USED // NOT TO AUDIT
 contract ERC777WitoutERC20 is ERC777BaseToken, Ownable {
 
     constructor() public {
