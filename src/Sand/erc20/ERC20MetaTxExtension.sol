@@ -24,7 +24,7 @@ contract ERC20MetaTxExtension is ERC1271Constants{
         address _relayer,
         uint256 initialGas
     ) internal view {
-        require(_relayer == address(0) || _relayer == msg.sender || _relayer == tx.origin, "wrong relayer");
+        require(_relayer == address(0) || _relayer == msg.sender, "wrong relayer");
         require(initialGas > params[2] + maxUlteriorGasCost, "not enought gas given"); // need to give at least as much gas as requested by signer + extra to perform the call
         require(nonces[_from]+1 == params[0], "nonce out of order");
         require(balanceOf(_from) >= _amount.add(params[2].add(anteriorGasCost).add(maxUlteriorGasCost).mul(params[3])), "_from not enough balance");
