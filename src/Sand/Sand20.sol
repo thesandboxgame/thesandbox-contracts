@@ -3,10 +3,10 @@ pragma solidity ^0.5.2;
 import "./erc20/ERC20ApproveExtension.sol";
 import "./erc20/ERC20MetaTxExtension.sol";
 import "./erc777/ERC20BaseTokenWithERC777Events.sol";
-import "./Sand712.sol";
+import "../TheSandbox712.sol";
 import { ProxyImplementation } from "../Libraries/ProxyImplementation.sol";
 
-contract Sand20 is ProxyImplementation, ERC20ApproveExtension, ERC20MetaTxExtension, Sand712, ERC20BaseTokenWithERC777Events {
+contract Sand20 is ProxyImplementation, ERC20ApproveExtension, ERC20MetaTxExtension, TheSandbox712, ERC20BaseTokenWithERC777Events {
 
     constructor(address _beneficiary, uint256 _chainId) public {
         initSand(_beneficiary, _chainId);

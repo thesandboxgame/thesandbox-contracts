@@ -4,7 +4,7 @@ const assert = require('assert');
 const rocketh = require('rocketh');
 
 const web3 = new Web3();
-web3.setProvider(ethereum);
+web3.setProvider(rocketh.ethereum);
 
 // const truffleConfig = require('../../truffle-config.js');
 
@@ -127,8 +127,9 @@ module.exports = {
   // Doesn't seem to work any more :(
   // Changing to use the invalid opcode error instead works
   expectThrow: async (promise) => {
+    let receipt;
     try {
-      await promise;
+      receipt = await promise;
     } catch (error) {
       // TODO: Check jump destination to destinguish between a throw
       //       and an actual invalid jump.
@@ -139,10 +140,14 @@ module.exports = {
       //       ganache log actually show an 'invalid jump' event.)
       const outOfGas = error.message.search('out of gas') >= 0;
       const revert = error.message.search('revert') >= 0;
+      const status0x0 = error.message.search('status": "0x0"') >= 0 ||  error.message.search('status":"0x0"') >= 0; // TODO better
       assert(
-        invalidOpcode || outOfGas || revert,
+        invalidOpcode || outOfGas || revert || status0x0,
         'Expected throw, got \'' + error + '\' instead',
       );
+      return;
+    }
+    if(receipt.status == "0x0") {
       return;
     }
     assert.fail('Expected throw not received');

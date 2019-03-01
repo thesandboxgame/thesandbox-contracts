@@ -1,9 +1,9 @@
 const t = require('tap');
 const assert = require('assert');
 const rocketh = require('rocketh');
-rocketh.launch().then(main);
 
-async function main({accounts}) {
+main(rocketh.accounts);
+async function main(accounts) {
   const {gas, expectThrow, toChecksumAddress, web3, deployContract} = require('../utils');
   const {
     transfer,

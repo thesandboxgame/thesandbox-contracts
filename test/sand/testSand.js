@@ -6,7 +6,7 @@ const rocketh = require('rocketh');
 
 const zeroAddress = '0x0000000000000000000000000000000000000000';
 
-rocketh.launch().then(main);
+main(rocketh.accounts);
 
 function approximately(value, expected, range) {
   return value.gte(expected.sub(range)) && value.lte(expected.add(range));
@@ -14,7 +14,7 @@ function approximately(value, expected, range) {
 
 const emptyBytes = '0x';
 
-async function main({accounts}) {
+async function main(accounts) {
   const {gas, expectThrow, getEventsFromReceipt, getPastEvents, toChecksumAddress, web3, deployContract, sendSignedTransaction} = require('../utils');
   const {
     TransferEvent,
@@ -61,7 +61,10 @@ async function main({accounts}) {
   };
 
   function runERC20Tests(title, resetContracts) {
+    // console.log('--> ', title);
     tap.test(title, async (t) => {
+      // console.log(title);
+
       let contracts;
       t.beforeEach(async () => {
         contracts = await resetContracts();
@@ -188,7 +191,9 @@ async function main({accounts}) {
 
   const approvalTypeHash = web3.utils.soliditySha3({type:'string', value:'Approve(address from,uint256 messageId,address target,uint256 amount)'});
   function runERC20ApproveExtensionTests(title, resetContracts) {
+    // console.log('--> ', title);
     tap.test(title, async (t) => {
+      // console.log(title);
       let contracts;
       t.beforeEach(async () => {
         contracts = await resetContracts();
