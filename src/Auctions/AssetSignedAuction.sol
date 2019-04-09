@@ -1,15 +1,18 @@
-pragma solidity ^0.5.2;
+pragma solidity 0.5.2;
 
-import "../../Libraries/SigUtil.sol";
-import "../../Libraries/PriceUtil.sol";
-import "../../Sand.sol";
-import "../../Interfaces/ERC20.sol";
+import "../Libraries/SigUtil.sol";
+import "../Libraries/PriceUtil.sol";
+import "../Sand.sol";
+import "../Asset.sol";
+import "../Interfaces/ERC20.sol";
+import "../TheSandbox712.sol";
 
-contract ERC1155SignedAuctionExtension {
+contract AssetSignedAuction is TheSandbox712{
 
     bytes32 constant AUCTION_TYPEHASH = keccak256("Auction(address token,uint256 offerId,uint256 startingPrice,uint256 endingPrice,uint256 startedAt,uint256 duration,uint256 packs,bytes ids,bytes amounts)");
 
     // TODO: review event values
+    // TODO remove underscore
     event OfferClaimed(
         address indexed _seller, 
         address indexed _buyer, 
@@ -18,12 +21,12 @@ contract ERC1155SignedAuctionExtension {
         uint256[] _auctionData, 
         uint256[] ids, 
         uint256[] amounts, 
-        bytes _signature
+        bytes _signature // TODO remove and use offerId 
     ); 
     event OfferCancelled(address indexed _seller, uint256 _offerId); 
 
-    uint256 constant MAX_SAND_AMOUNT = 1000000000000000000000000000;
     uint256 constant MAX_UINT256 = 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff;
+    
     // Stack too deep, grouping parameters
     // AuctionData:   
     uint256 constant AuctionData_OfferId = 0;
@@ -35,6 +38,14 @@ contract ERC1155SignedAuctionExtension {
 
     mapping (address => mapping (uint256 => uint256)) claimed;
 
+    Asset asset;
+    Sand sand;
+    constructor(Sand _sand, Asset _asset, uint256 _chainId) public {
+        asset = _asset;
+        sand = _sand;
+        init712(_chainId);
+    }
+
     function claimSellerOffer(
         address buyer, 
         address payable seller, 
@@ -45,50 +56,53 @@ contract ERC1155SignedAuctionExtension {
         uint256[] calldata amounts, 
         bytes calldata signature
     ) external payable {
-        require(msg.sender == buyer || msg.sender == address(sandContract()), "invalid buyer");
+        require(msg.sender == buyer || msg.sender == address(sand), "invalid buyer");
 
-        // TODO: Not sure if required, would fail in another step if signature mismatch? This way provides an error message at least
+        // TODO: do we remove seller from the argument list? and recover it ?
         require(seller == recover(token, auctionData, ids, amounts, signature), "Signature mismatches");
 
         require(claimed[seller][auctionData[AuctionData_OfferId]] != MAX_UINT256, "Auction cancelled");
-        require(canBuyAmount(seller, auctionData, buyAmount), "Buy amount exceeds sell amount");
+        require(SafeMath.add(claimed[seller][auctionData[AuctionData_OfferId]], buyAmount) <= auctionData[AuctionData_Packs], "Buy amount exceeds sell amount");
 
-        /// ==========================
-        /// Checks for incorrect offer?
-        /// ==========================
-        
-        // TODO: Could be optional
         require(auctionData[AuctionData_StartedAt] <= block.timestamp, "Auction didn't start yet"); 
         require(auctionData[AuctionData_StartedAt] + auctionData[AuctionData_Duration] > block.timestamp, "Auction finished"); 
 
-        // TODO: Any of this requires would render the signature invalid (imposible to execute)
-        /*require(auctionData[AuctionData_StartingPrice] < MAX_SAND_AMOUNT, "Starting price too high");
-        require(auctionData[AuctionData_EndingPrice] < MAX_SAND_AMOUNT, "Ending price too high");
-        require(auctionData[AuctionData_Duration] > 0, "Duration too low"); // MUST be greater than 0
-        // this would be checked by the _batchTransferFrom
-        require(ids.length == amounts.length, "Inconsistent array length between args amounts and ids"); // So we properly transfer assets
-        require(ids.length == packAmounts.length, "Inconsistent array length between args packAmounts and ids");*/
+        _executeDeal(token, buyer, seller, auctionData, ids, amounts, buyAmount);
+        emit OfferClaimed(seller, buyer, token, buyAmount, auctionData, ids, amounts, signature);
+    }
 
-        claimed[seller][auctionData[AuctionData_OfferId]] += buyAmount;
-
+    function _executeDeal(
+        address token,
+        address buyer,
+        address payable seller,
+        uint256[] memory auctionData,
+        uint256[] memory ids,
+        uint256[] memory amounts,
+        uint256 buyAmount
+    ) internal {
         uint256 offer = PriceUtil.calculateCurrentPrice(
             auctionData[AuctionData_StartingPrice], 
             auctionData[AuctionData_EndingPrice], 
             auctionData[AuctionData_Duration], 
             block.timestamp - auctionData[AuctionData_StartedAt]
         ) * buyAmount;
+        
+        claimed[seller][auctionData[AuctionData_OfferId]] += buyAmount;
 
         if(token != address(0)) {
-            ERC20(token).transferFrom(buyer, seller, offer);
+            ERC20(token).transferFrom(buyer, seller, offer); // require approval/ for SAND we can add it to the list of defaultOperators / superOperators
         } else {
-            // TODO: We could have only sand offers            
+            require(buyer == msg.sender, "for ETH based offers, the buyer need to be the sender");
+            require(msg.value >= offer, "not enough ETH"); // in case the aucction could store ETH for other reasons
             seller.transfer(offer);    
             msg.sender.transfer(msg.value - offer);
         }
 
-        _batchTransferFromTimes(seller, buyer, ids, amounts, buyAmount);
-
-        emit OfferClaimed(seller, buyer, token, buyAmount, auctionData, ids, amounts, signature);
+        uint256[] memory packAmounts = new uint[](amounts.length);
+        for(uint256 i = 0; i < packAmounts.length; i++){
+            packAmounts[i] = amounts[i] * buyAmount;
+        }
+        asset.batchTransferFrom(seller, buyer, ids, packAmounts);
     }
 
     function cancelSellerOffer(uint256 offerId) external {
@@ -121,13 +135,5 @@ contract ERC1155SignedAuctionExtension {
                 keccak256(abi.encodePacked(amounts))
             )
         );
-    }     
-
-    function canBuyAmount(address seller, uint256[] memory auctionData, uint256 buyAmount) internal view returns (bool) {
-        return SafeMath.add(claimed[seller][auctionData[AuctionData_OfferId]], buyAmount) <= auctionData[AuctionData_Packs];
     }
-
-    function sandContract() internal view returns(Sand);
-    function domainSeparator() internal view returns(bytes32);
-    function _batchTransferFromTimes(address _from, address _to, uint256[] memory _ids, uint256[] memory _values, uint256 _times) internal;
 }

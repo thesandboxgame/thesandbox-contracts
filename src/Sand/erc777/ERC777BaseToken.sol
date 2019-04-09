@@ -1,4 +1,4 @@
-pragma solidity ^0.5.2;
+pragma solidity 0.5.2;
 
 import { ERC820Implementer } from "../../Libraries/ERC820Implementer.sol";
 import { ERC777Token } from "../../Interfaces/ERC777Token.sol";

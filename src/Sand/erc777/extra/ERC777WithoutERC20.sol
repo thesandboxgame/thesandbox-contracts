@@ -1,4 +1,4 @@
-pragma solidity ^0.5.2;
+pragma solidity 0.5.2;
 
 import { ERC777BaseToken } from "../ERC777BaseToken.sol";
 

@@ -1,4 +1,4 @@
-pragma solidity ^0.5.2;
+pragma solidity 0.5.2;
 
 contract ERC820Registry {
     function getManager(address addr) public view returns(address);

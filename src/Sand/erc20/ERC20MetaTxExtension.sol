@@ -1,4 +1,4 @@
-pragma solidity ^0.5.2;
+pragma solidity 0.5.2;
 
 import "../../Libraries/BytesUtil.sol";
 import "../../Libraries/SigUtil.sol";
@@ -9,26 +9,25 @@ import "../../Interfaces/ERC1271Constants.sol";
 contract ERC20MetaTxExtension is ERC1271Constants{
     using SafeMath for uint256;
 
-    bytes32 constant ERC20METATRANSACTION_TYPEHASH = keccak256("ERC20MetaTransaction(address from,address to,uint256 amount,bytes data,uint256 nonce,uint256 gasPrice,uint256 gasLimit,uint256 tokenGasPrice,address relayer)");
+    bytes32 constant ERC20METATRANSACTION_TYPEHASH = keccak256("ERC20MetaTransaction(address from,address to,uint256 amount,bytes data,uint256 nonce,uint256 gasPrice,uint256 txGas,uint256 gasLimit,uint256 tokenGasPrice,address relayer)");
     mapping(address => uint256) nonces;
 
-    uint256 constant anteriorGasCost = 100000; // TODO calculate accurately
-    uint256 constant maxUlteriorGasCost = 50000;  // TODO calculate accurately the worst case
+    uint256 constant GAS_LIMIT_OFFSET = 112000;
+    uint256 constant MIN_GAS = 23000 + 17500; // ~ 12500 (transfer with non-zero receiver balance) + ~ 4000 (Sent event)
 
-    event MetaTx(bool success, bytes returnData);
+    event MetaTx(address indexed from, uint256 indexed nonce, bool success, bytes returnData);
 
     function ensureParametersValidity(
         address _from,
         uint256 _amount,
-        uint256[4] memory params, // _nonce, _gasPrice, _gasLimit, _tokenGasPrice
+        uint256[4] memory params, // _nonce, _gasPrice, _txGas, _tokenGasPrice
         address _relayer,
         uint256 initialGas
     ) internal view {
         require(_relayer == address(0) || _relayer == msg.sender, "wrong relayer");
-        require(initialGas > params[2] + maxUlteriorGasCost, "not enought gas given"); // need to give at least as much gas as requested by signer + extra to perform the call
         require(nonces[_from]+1 == params[0], "nonce out of order");
-        require(balanceOf(_from) >= _amount.add(params[2].add(anteriorGasCost).add(maxUlteriorGasCost).mul(params[3])), "_from not enough balance");
-        require(tx.gasprice == params[1], "gasPrice != signer gasPrice"); // need to provide same gasPrice as requested by signer
+        require(balanceOf(_from) >= _amount.add((params[2].add(GAS_LIMIT_OFFSET)).mul(params[3])), "_from not enough balance");
+        require(tx.gasprice >= params[1], "gasPrice < signer gasPrice"); // need to provide at least as much gasPrice as requested by signer
     }
 
     function ensureCorrectSigner(
@@ -36,13 +35,13 @@ contract ERC20MetaTxExtension is ERC1271Constants{
         address _to,  
         uint256 _amount,
         bytes memory _data,
-        uint256[4] memory params, // _nonce, _gasPrice, _gasLimit, _tokenGasPrice
+        uint256[4] memory params, // _nonce, _gasPrice, _txGas, _tokenGasPrice
         address _relayer,
         bytes memory _sig,
         bytes32 typeHash,
         bool signedOnBehalf
     ) internal view {
-        bytes32 hash = keccak256(abi.encodePacked(
+        bytes memory data = abi.encodePacked(
             "\x19\x01",
             domainSeparator(),
             keccak256(abi.encode(
@@ -54,30 +53,29 @@ contract ERC20MetaTxExtension is ERC1271Constants{
                 params[0],
                 params[1],
                 params[2],
+                GAS_LIMIT_OFFSET.add(params[2]), // expect signing gasLimit = txGas + GAS_LIMIT_OFFSET
                 params[3],
                 _relayer
             ))
-        ));
+        );
         if(signedOnBehalf) {
-            require(ERC1271(_from).isValidSignature(abi.encodePacked(hash), _sig) == ERC1271_MAGICVALUE, "invalid signature");
+            require(ERC1271(_from).isValidSignature(data, _sig) == ERC1271_MAGICVALUE, "invalid signature");
         } else {
-            address signer = SigUtil.recover(hash, _sig);
+            address signer = SigUtil.recover(keccak256(data), _sig);
             require(signer == _from, "signer != _from");
         }
     }
 
-    function ensureCorrectSignerViaBasicSignature(
+    function encodeBasicSignatureData(
+        bytes32 typeHash,
         address _from,
-        address _to,  
+        address _to,
         uint256 _amount,
         bytes memory _data,
-        uint256[4] memory params, // _nonce, _gasPrice, _gasLimit, _tokenGasPrice
-        address _relayer,
-        bytes memory _sig,
-        bytes32 typeHash,
-        bool signedOnBehalf
-    ) internal view {
-        bytes32 hash = SigUtil.prefixed(keccak256(abi.encodePacked(
+        uint256[4] memory params,
+        address _relayer
+    ) internal view returns (bytes32) {
+        return keccak256(abi.encodePacked(
             address(this),
             typeHash, 
              _from,
@@ -87,13 +85,28 @@ contract ERC20MetaTxExtension is ERC1271Constants{
             params[0],
             params[1],
             params[2],
+            GAS_LIMIT_OFFSET.add(params[2]), // expect signing gasLimit = txGas + GAS_LIMIT_OFFSET
             params[3],
             _relayer
-        )));
+        ));
+    }
+
+    function ensureCorrectSignerViaBasicSignature(
+        address _from,
+        address _to,  
+        uint256 _amount,
+        bytes memory _data,
+        uint256[4] memory params, // _nonce, _gasPrice, _txGas, _tokenGasPrice
+        address _relayer,
+        bytes memory _sig,
+        bytes32 typeHash,
+        bool signedOnBehalf
+    ) internal view {
+        bytes memory data = SigUtil.prefixed(encodeBasicSignatureData(typeHash, _from, _to, _amount, _data, params, _relayer));
         if(signedOnBehalf) {
-            require(ERC1271(_from).isValidSignature(abi.encodePacked(hash), _sig) == ERC1271_MAGICVALUE, "invalid signature");
+            require(ERC1271(_from).isValidSignature(data, _sig) == ERC1271_MAGICVALUE, "invalid signature");
         } else {
-            address signer = SigUtil.recover(hash, _sig);
+            address signer = SigUtil.recover(keccak256(data), _sig);
             require(signer == _from, "signer != _from");
         }
     }
@@ -103,7 +116,7 @@ contract ERC20MetaTxExtension is ERC1271Constants{
         address _to,  
         uint256 _amount,
         bytes calldata _data,
-        uint256[4] calldata params, // _nonce, _gasPrice, _gasLimit, _tokenGasPrice, _amount
+        uint256[4] calldata params, // _nonce, _gasPrice, _txGas, _tokenGasPrice
         address _relayer,
         bytes calldata _sig,
         address _tokenReceiver,
@@ -120,7 +133,7 @@ contract ERC20MetaTxExtension is ERC1271Constants{
         address _to,  
         uint256 _amount,
         bytes calldata _data,
-        uint256[4] calldata params, // _nonce, _gasPrice, _gasLimit, _tokenGasPrice, _amount
+        uint256[4] calldata params, // _nonce, _gasPrice, _txGas, _tokenGasPrice
         address _relayer,
         bytes calldata _sig,
         address _tokenReceiver,
@@ -146,37 +159,47 @@ contract ERC20MetaTxExtension is ERC1271Constants{
         bool success;
         bytes memory returnData;
         if(_data.length == 0){
-            _transfer(_from, _to, _amount);  // _gasLimit can be zero when no data is provided
+            _transfer(_from, _to, _amount);
             success = true;
         } else {
-            (success, returnData) = callERC20MetaTx(_from, _to, _amount, _data, params[2]);        
+            require(BytesUtil.doFirstParamEqualsAddress(_data, _from), "first param != _from");
+            bool allowanceChanged = false;
+            uint256 before = 0;
+            if(_amount > 0 && !isSuperOperator(_to)){
+                before = allowance(_from, _to);
+                if(before != 2**256-1) {
+                    allowanceChanged = true;
+                    _approveForWithoutEvent(_from, _to, _amount);
+                }   
+            }
+            (success, returnData) = _to.call.gas(params[2])(_data);
+            require(gasleft() >= params[2].div(63), "not enough gas left");
+            
+            if(allowanceChanged) {
+                _approveForWithoutEvent(_from, _to, before);
+            }
         }
 
-        emit MetaTx(success, returnData);
+        emit MetaTx(_from, params[0], success, returnData);
         
-        _transfer(_from, _tokenReceiver, ((initialGas + anteriorGasCost) - gasleft()) * params[3]);
+        if(params[3] > 0) {
+            uint256 gasConsumed = (initialGas.add(MIN_GAS)).sub(gasleft());
+            uint256 maxGasCharge = GAS_LIMIT_OFFSET.add(params[2]);
+            if(gasConsumed > maxGasCharge) {
+                gasConsumed = maxGasCharge; 
+                // idealy we would like to charge only max(GAS_LIMIT_OFFSET, gas consumed outside the inner call) + gas consumed as part of the inner call
+            }
+            _transfer(_from, _tokenReceiver, gasConsumed.mul(params[3]));
+        }
+        
         return (success, returnData);
     }
-
-    function callERC20MetaTx(address _from, address _to, uint256 _amountApproved, bytes memory _data, uint256 _gasLimit) internal returns (bool, bytes memory) {
-        require(BytesUtil.doFirstParamEqualsAddress(_data, _from), "first param != _from");
-
-        uint256 prevAllowance = allowance(_from, _to);
-        if(_amountApproved > 0 && prevAllowance != (2**256)-1) { // assume https://github.com/ethereum/EIPs/issues/717
-            _approveForWithoutEvent(_from, _to, _amountApproved);
-        }
-        (bool success, bytes memory returnData) = _to.call.gas(_gasLimit)(_data);        
-        if(_amountApproved > 0 && prevAllowance != (2**256)-1){
-            _approveForWithoutEvent(_from, _to, prevAllowance);
-        }
-        return (success, returnData);
-    }
-
 
     function meta_nonce(address _from) external view returns (uint256 nonce) {
         return nonces[_from];
     }
 
+    function isSuperOperator(address who) public view returns(bool);
     function allowance(address _owner, address _spender) public view returns (uint256 remaining);
     function domainSeparator() internal view returns(bytes32);
     function balanceOf(address who) public view returns (uint256);

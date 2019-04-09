@@ -1,4 +1,4 @@
-pragma solidity ^0.5.2;
+pragma solidity 0.5.2;
 
 /// @dev Note: the ERC-165 identifier for this interface is 0xf23a6e61.
 interface ERC1155TokenReceiver {

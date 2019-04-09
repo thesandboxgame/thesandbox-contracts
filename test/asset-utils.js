@@ -1,14 +1,14 @@
-const { gas, web3 } = require('../utils');
+const { gas, encodeEventSignature } = require('./utils');
 
-const ERC1155TransferEvent = web3.eth.abi.encodeEventSignature('TransferSingle(address,address,address,uint256,uint256)');
-const ERC1155TransferBatchEvent = web3.eth.abi.encodeEventSignature('TransferBatch(address,address,address,uint256[],uint256[])');
-const URIEvent = web3.eth.abi.encodeEventSignature('URI(string,uint256)');
-const OfferClaimedEvent = web3.eth.abi.encodeEventSignature('OfferClaimed(address,address,address,uint256,uint256[],uint256[],uint256[],bytes)');
-const OfferCancelledEvent = web3.eth.abi.encodeEventSignature('OfferCancelled(address,uint256)');
-const ExtractionEvent = web3.eth.abi.encodeEventSignature('Extraction(uint256,uint256,string)');
+const TransferSingleEvent = encodeEventSignature('TransferSingle(address,address,address,uint256,uint256)');
+const TransferBatchEvent = encodeEventSignature('TransferBatch(address,address,address,uint256[],uint256[])');
+const URIEvent = encodeEventSignature('URI(string,uint256)');
+const OfferClaimedEvent = encodeEventSignature('OfferClaimed(address,address,address,uint256,uint256[],uint256[],uint256[],bytes)');
+const OfferCancelledEvent = encodeEventSignature('OfferCancelled(address,uint256)');
+const ExtractionEvent = encodeEventSignature('Extraction(uint256,uint256,string)');
 
 function mint(contract, ipfsHash, supply, creator) {
-  return contract.methods.mint(creator, ipfsHash, supply, creator).send({ from: creator, gas });
+  return contract.methods.mint(creator, 0, ipfsHash, supply, creator).send({ from: creator, gas });
 }
 
 async function mintAndReturnTokenId(contract, ipfsHash, supply, creator) {
@@ -25,7 +25,7 @@ function mintMultiple(contract, uris, supplies, creator) {
     allStrings += uri;
     substringLengths.push(uri.length);
   }
-  return contract.methods.mintMultiple(creator, allStrings, substringLengths, supplies, creator).send({ from: creator, gas });
+  return contract.methods.mintMultiple(creator, 0, allStrings, substringLengths, supplies, creator).send({ from: creator, gas });
 }
 
 function mintMultipleWithNFTs(contract, uris, supplies, numNFTs, creator) {
@@ -38,7 +38,7 @@ function mintMultipleWithNFTs(contract, uris, supplies, numNFTs, creator) {
     substringLengths.push(uri.length);
   }
   // console.log(allStrings, substringLengths, supplies, numNFTs, creator);
-  return contract.methods.mintMultipleWithNFT(creator, allStrings, substringLengths, supplies, numNFTs, creator).send({ from: creator, gas });
+  return contract.methods.mintMultipleWithNFT(creator, 0, allStrings, substringLengths, supplies, numNFTs, creator).send({ from: creator, gas });
 }
 
 async function mintTokensIncludingNFTWithSameURI(contract, num, uri, supply, numNFTs, creator) {
@@ -51,8 +51,8 @@ async function mintTokensIncludingNFTWithSameURI(contract, num, uri, supply, num
     }
   }
   const receipt = await mintMultipleWithNFTs(contract, uris, supplies, numNFTs, creator);
-  const eventsMatching = await getEventsMatching(contract, receipt, ERC1155TransferEvent);
-  return eventsMatching.map((event) => event.returnValues._id);
+  const eventsMatching = await getEventsMatching(contract, receipt, TransferBatchEvent);
+  return eventsMatching[0].returnValues._ids;
 }
 
 async function mintTokensWithSameURIAndSupply(contract, num, uri, supply, creator) {
@@ -65,14 +65,14 @@ async function mintTokensWithSameURIAndSupply(contract, num, uri, supply, creato
     }
   }
   const receipt = await mintMultiple(contract, uris, supplies, creator);
-  const eventsMatching = await getEventsMatching(contract, receipt, ERC1155TransferEvent);
-  return eventsMatching.map((event) => event.returnValues._id);
+  const eventsMatching = await getEventsMatching(contract, receipt, TransferBatchEvent);
+  return eventsMatching[0].returnValues._ids;
 }
 
 async function mintMultipleAndReturnTokenIds(contract, uris, supplies, creator) {
   const receipt = await mintMultiple(contract, uris, supplies, creator);
-  const eventsMatching = await getEventsMatching(contract, receipt, ERC1155TransferEvent);
-  return eventsMatching.map((event) => event.returnValues._id);
+  const eventsMatching = await getEventsMatching(contract, receipt, TransferBatchEvent);
+  return eventsMatching[0].returnValues._ids;
 }
 
 async function mintOneAtATime(contract, uris, supplies, creator) {
@@ -80,7 +80,7 @@ async function mintOneAtATime(contract, uris, supplies, creator) {
   for (let i = 0; i < uris.length; i++) {
     const uri = uris[i];
     const supply = supplies[i];
-    const receipt = await contract.methods.mint(creator, uri, supply, creator).send({ from: creator, gas });
+    const receipt = await contract.methods.mint(creator, 0, uri, supply, creator).send({ from: creator, gas });
     receipts.push(receipt);
   }
   return receipts;
@@ -101,7 +101,7 @@ async function mintOneAtATimeAndReturnTokenIds(contract, uris, supplies, creator
   const receipts = await mintOneAtATime(contract, uris, supplies, creator);
   const eventsMatching = [];
   for (const receipt of receipts) {
-    const events = await getEventsMatching(contract, receipt, ERC1155TransferEvent);
+    const events = await getEventsMatching(contract, receipt, TransferSingleEvent);
     eventsMatching.push(events[0]);
   }
   return eventsMatching.map((event) => event.returnValues._id);
@@ -115,9 +115,6 @@ async function getEventsMatching(contract, receipt, sig) {
 }
 
 module.exports = {
-  URIEvent,
-  ERC1155TransferEvent,
-  ERC1155TransferBatchEvent,
   mint,
   mintAndReturnTokenId,
   mintMultiple,

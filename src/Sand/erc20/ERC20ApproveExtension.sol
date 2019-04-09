@@ -1,4 +1,4 @@
-pragma solidity ^0.5.2;
+pragma solidity 0.5.2;
 
 import "../../Libraries/BytesUtil.sol";
 import "../../Libraries/SigUtil.sol";
@@ -29,11 +29,11 @@ contract ERC20ApproveExtension is ERC1271Constants{
 
     function approveViaBasicSignature(address _from, uint256 _messageId, address _target, uint256 _amount, bytes calldata _signature, bool signedOnBehalf) external returns (bool approved) {
         require(!usedApprovalMessages[_from][_messageId], "message already used or revoked");
-        bytes32 hash = SigUtil.prefixed(keccak256(abi.encodePacked(address(this), APPROVE_TYPEHASH, _from, _messageId, _target,_amount)));
+        bytes memory data = SigUtil.prefixed(keccak256(abi.encodePacked(address(this), APPROVE_TYPEHASH, _from, _messageId, _target,_amount)));
         if(signedOnBehalf) {
-            require(ERC1271(_from).isValidSignature(abi.encodePacked(hash), _signature) == ERC1271_MAGICVALUE, "invalid signature");
+            require(ERC1271(_from).isValidSignature(data, _signature) == ERC1271_MAGICVALUE, "invalid signature");
         } else {
-            address signer = SigUtil.recover(hash, _signature);
+            address signer = SigUtil.recover(keccak256(data), _signature);
             require(signer == _from, "signer != _from");
         }
         usedApprovalMessages[_from][_messageId] = true;
@@ -44,7 +44,7 @@ contract ERC20ApproveExtension is ERC1271Constants{
     bytes32 constant APPROVE_TYPEHASH = keccak256("Approve(address from,uint256 messageId,address target,uint256 amount)");
     function approveViaSignature(address _from, uint256 _messageId, address _target, uint256 _amount, bytes calldata _signature, bool signedOnBehalf) external returns (bool approved) {
         require(!usedApprovalMessages[_from][_messageId], "message already used or revoked");
-        bytes32 hash = keccak256(abi.encodePacked(
+        bytes memory data = abi.encodePacked(
             "\x19\x01",
             domainSeparator(),
             keccak256(abi.encode(
@@ -54,12 +54,12 @@ contract ERC20ApproveExtension is ERC1271Constants{
                 _target,
                 _amount
             ))
-        ));
+        );
         
         if(signedOnBehalf) {
-            require(ERC1271(_from).isValidSignature(abi.encodePacked(hash), _signature) == ERC1271_MAGICVALUE, "invalid signature");
+            require(ERC1271(_from).isValidSignature(data, _signature) == ERC1271_MAGICVALUE, "invalid signature");
         } else {
-            address signer = SigUtil.recover(hash, _signature);
+            address signer = SigUtil.recover(keccak256(data), _signature);
             require(signer == _from, "signer != _from");
         }
         usedApprovalMessages[_from][_messageId] = true;

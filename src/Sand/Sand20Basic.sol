@@ -1,14 +1,15 @@
-pragma solidity ^0.5.2;
+pragma solidity 0.5.2;
 
 import "./erc777/ERC20BaseTokenWithERC777Events.sol";
 import { ProxyImplementation } from "../Libraries/ProxyImplementation.sol";
 
 contract Sand20Basic is ProxyImplementation, ERC20BaseTokenWithERC777Events {
 
-    constructor(address _beneficiary) public {
-        initSand(_beneficiary);
+    constructor(address _admin, address _beneficiary) public {
+        initSand(_admin, _beneficiary);
     }
-    function initSand(address _beneficiary) public phase('SAND_20') {
+    function initSand(address _admin, address _beneficiary) public phase('SAND_20') {
+        admin = _admin;
         if(mTotalSupply == 0 ) { _mint(_beneficiary, 3000000000000000000000000000); }
     }
 

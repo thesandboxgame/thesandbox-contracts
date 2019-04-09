@@ -1,4 +1,4 @@
-pragma solidity ^0.5.2;
+pragma solidity 0.5.2;
 
 import "../Interfaces/ERC777TokensRecipient.sol";
 import "../Interfaces/ERC777Token.sol";

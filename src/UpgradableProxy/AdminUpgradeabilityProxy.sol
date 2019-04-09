@@ -1,5 +1,5 @@
 // from https://github.com/zeppelinos/zos/blob/1cea266a672a1efc31915420af5eb5185173837c/packages/lib/contracts/upgradeability/AdminUpgradeabilityProxy.sol
-pragma solidity ^0.5.2;
+pragma solidity 0.5.2;
 
 import "./UpgradeabilityProxy.sol";
 import "./ProxyAdmin.sol";
@@ -49,10 +49,10 @@ contract AdminUpgradeabilityProxy is UpgradeabilityProxy {
    * https://solidity.readthedocs.io/en/v0.4.24/abi-spec.html#function-selector-and-argument-encoding.
    * This parameter is optional, if no data is given the initialization call to proxied contract will be skipped.
    */
-  constructor(address _implementation, bytes memory _data) UpgradeabilityProxy(_implementation, _data) public payable {
+  constructor(address payable _owner, address _implementation, bytes memory _data) UpgradeabilityProxy(_implementation, _data) public payable {
     assert(ADMIN_SLOT == keccak256("org.zeppelinos.proxy.admin"));
 
-    ProxyAdmin proxyAdmin = new ProxyAdmin(this, msg.sender); // TODO cheaper creation : https://eips.ethereum.org/EIPS/eip-1167
+    ProxyAdmin proxyAdmin = new ProxyAdmin(this, _owner); // TODO cheaper creation : https://eips.ethereum.org/EIPS/eip-1167
     emit AdminChanged(address(0), address(proxyAdmin));
     _setAdmin(address(proxyAdmin));
   }

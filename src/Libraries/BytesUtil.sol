@@ -1,4 +1,4 @@
-pragma solidity ^0.5.2;
+pragma solidity 0.5.2;
 
 library BytesUtil {
     function memcpy(uint dest, uint src, uint len) internal pure {
@@ -56,6 +56,18 @@ library BytesUtil {
             value := mload(add(data, 36))
         }
         return value == uint256(_address);
+    }
+
+    function doParamEqualsUInt256(bytes memory data, uint256 i, uint256 value) internal pure returns (bool) {
+        if(data.length < (36 + (i+1)*32)) {
+            return false;
+        }
+        uint256 offset = 36 + i*32;
+        uint256 valuePresent;
+        assembly {
+            valuePresent := mload(add(data, offset))
+        }
+        return valuePresent == value;
     }
 
     function overrideFirst32BytesWithAddress(bytes memory data, address _address) internal pure returns (bytes memory){

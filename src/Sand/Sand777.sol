@@ -1,4 +1,4 @@
-pragma solidity ^0.5.2;
+pragma solidity 0.5.2;
 
 import "./erc20/ERC20ApproveExtension.sol";
 import "./erc777/ERC777BaseToken.sol";
@@ -7,8 +7,9 @@ import { ProxyImplementation } from "../Libraries/ProxyImplementation.sol";
 import "./erc20/ERC20MetaTxExtension.sol";
 import "./erc777/ERC777MetaTxExtension.sol";
 
-contract Sand777 is ProxyImplementation, ERC20ApproveExtension, ERC777MetaTxExtension, TheSandbox712, ERC777BaseToken {
+contract Sand777 is ERC777MetaTxExtension, ProxyImplementation, ERC20ApproveExtension, TheSandbox712, ERC777BaseToken {
 
+    // TODO add _owners
     constructor(address _beneficiary, uint256 _chainId) public {
         initSand(_beneficiary, _chainId);
     }

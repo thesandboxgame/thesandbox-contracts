@@ -1,4 +1,4 @@
-pragma solidity ^0.5.2;
+pragma solidity 0.5.2;
 
 import "../Interfaces/ERC1271.sol";
 import "../Interfaces/ERC1271Constants.sol";
@@ -18,11 +18,7 @@ contract ERC1271Wallet is ERC1271, ERC1271Constants{
         bytes memory _data, 
         bytes memory _signature
     ) public view returns (bytes4 magicValue){
-        bytes32 hash;
-        assembly {
-            hash := mload(add(_data, 32))
-        }
-        address signer = SigUtil.recover(hash, _signature);
+        address signer = SigUtil.recoverWithZeroOnFailure(keccak256(_data), _signature);
         if(authorizedSigners[signer]) {
             return ERC1271_MAGICVALUE;
         }

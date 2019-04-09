@@ -5,7 +5,7 @@ credentials.json
 token.json
 tmp_deployments/
 .nyc_output/
-.mythx_credentials
-.mnemonic
-.mnemonic_todo
 .geth.log
+.bitski*
+.mythx_credentials*
+.mnemonic*
