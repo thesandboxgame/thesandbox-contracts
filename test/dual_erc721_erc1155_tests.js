@@ -10,7 +10,8 @@ const {
     tx,
     gas,
     call,
-    expectThrow
+    expectThrow,
+    emptyBytes,
 } = require('./utils');
 
 // const {
@@ -44,13 +45,13 @@ function runDualERC1155ERC721tests(title, resetContract, mintDual) {
   
         t.test('transfers', async (t) => {
             t.test('transfering one NFT via ERC1155 transfer method results in one erc721 transfer event', async () => {
-                const receipt = await tx(contract, 'transferFrom', {from: creator, gas}, creator, user1, assetsId[1], 1);
+                const receipt = await tx(contract, 'safeTransferFrom', {from: creator, gas}, creator, user1, assetsId[1], 1, emptyBytes);
                 const eventsMatching = await getEventsFromReceipt(contract, TransferEvent, receipt);
                 assert.equal(eventsMatching.length, 1);
             });
 
             t.test('transfering one MFT via ERC1155 transfer method should result in no erc721 transfer event', async () => {
-                const receipt = await tx(contract, 'transferFrom', {from: creator, gas}, creator, user1, assetsId[0], 1);
+                const receipt = await tx(contract, 'safeTransferFrom', {from: creator, gas}, creator, user1, assetsId[0], 1, emptyBytes);
                 const eventsMatching = await getEventsFromReceipt(contract, TransferEvent, receipt);
                 assert.equal(eventsMatching.length, 0);
             });
@@ -62,14 +63,14 @@ function runDualERC1155ERC721tests(title, resetContract, mintDual) {
 
         t.test('NFT batch transfers', async (t) => {
             t.test('transfering one NFT via batch transfer results in one erc721 transfer event', async () => {
-                const receipt = await tx(contract, 'batchTransferFrom', {from: creator, gas}, 
-                    creator, user1, [assetsId[1], assetsId[0], assetsId[4]], [1, 5, 10]);
+                const receipt = await tx(contract, 'safeBatchTransferFrom', {from: creator, gas}, 
+                    creator, user1, [assetsId[1], assetsId[0], assetsId[4]], [1, 5, 10], emptyBytes);
                 const eventsMatching = await getEventsFromReceipt(contract, TransferEvent, receipt);
                 assert.equal(eventsMatching.length, 1);         
             });
             t.test('transfering 2 NFT via batch transfer results in 2 erc721 transfer events', async () => {
-                const receipt = await tx(contract, 'batchTransferFrom', {from: creator, gas}, 
-                    creator, user1, [assetsId[1], assetsId[3], assetsId[4]], [1, 1, 10]);
+                const receipt = await tx(contract, 'safeBatchTransferFrom', {from: creator, gas}, 
+                    creator, user1, [assetsId[1], assetsId[3], assetsId[4]], [1, 1, 10], emptyBytes);
                 const eventsMatching = await getEventsFromReceipt(contract, TransferEvent, receipt);
                 assert.equal(eventsMatching.length, 2);
             });
@@ -88,7 +89,7 @@ function runDualERC1155ERC721tests(title, resetContract, mintDual) {
             t.test('after removing setApprovalForAll, operator should not be able to transfer', async () => {
                 await tx(contract, 'setApprovalForAll', {from: creator, gas}, operator, true);
                 await tx(contract, 'setApprovalForAll', {from: creator, gas}, operator, false);
-                await expectThrow(tx(contract, 'transferFrom', {from: operator, gas}, creator, user1, assetsId[1], 1));
+                await expectThrow(tx(contract, 'safeTransferFrom', {from: operator, gas}, creator, user1, assetsId[1], 1, emptyBytes));
             });
         });
     });

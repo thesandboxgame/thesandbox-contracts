@@ -23,11 +23,10 @@ const sandOwner = creator;
 const user1 = toChecksumAddress(accounts[1]);
 const user2 = toChecksumAddress(accounts[2]);
 const user3 = toChecksumAddress(accounts[3]);
-const chainId = rocketh.chainId;
 
 async function deployProxiedSand20() {
-  const sand20 = await deployContract(creator, 'Sand20', sandOwner, sandOwner, chainId);
-  const initData = encodeCall(sand20, 'initSand', sandOwner, sandOwner, chainId);
+  const sand20 = await deployContract(creator, 'Sand20', sandOwner, sandOwner);
+  const initData = encodeCall(sand20, 'initSand', sandOwner, sandOwner);
   const result = await deployProxyContract(creator, sand20, initData);
   return {admin: result.admin, sand: result.proxy, proxyAsAdmin: result.proxyAsAdmin};
 }
@@ -61,8 +60,8 @@ t.test('creator can change Admin via adminProxy and user can still transfer', as
 t.test('creator can not upgrade after changing admin to another user', async () => {
   const {admin} = await deployProxiedSand20();
   await tx(admin, 'changeAdmin', {from: creator, gas}, user2);
-  const sand777 = await deployContract(creator, 'Sand777', sandOwner, chainId);
-  const initData = encodeCall(sand777, 'initSand', sandOwner, chainId);
+  const sand777 = await deployContract(creator, 'Sand777', sandOwner);
+  const initData = encodeCall(sand777, 'initSand', sandOwner);
   await expectThrow(tx(admin, 'upgradeToAndCall', {from: creator, gas}, sand777.options.address, initData));
 });
 
@@ -74,16 +73,16 @@ t.test('creator cannot change admin after already doing so', async () => {
 
 t.test('creator can upgrade', async () => {
   const {admin} = await deployProxiedSand20();
-  const sand777 = await deployContract(creator, 'Sand777', sandOwner, chainId);
-  const initData = encodeCall(sand777, 'initSand', sandOwner, chainId);
+  const sand777 = await deployContract(creator, 'Sand777', sandOwner);
+  const initData = encodeCall(sand777, 'initSand', sandOwner);
   await tx(admin, 'upgradeToAndCall', {from: creator, gas}, sand777.options.address, initData);
 });
 
 t.test('new admin can upgrade directly', async () => {
   const {admin, proxyAsAdmin} = await deployProxiedSand20();
   await tx(admin, 'changeAdmin', {from: creator, gas}, user2);
-  const sand777 = await deployContract(creator, 'Sand777', sandOwner, chainId);
-  const initData = encodeCall(sand777, 'initSand', sandOwner, chainId);
+  const sand777 = await deployContract(creator, 'Sand777', sandOwner);
+  const initData = encodeCall(sand777, 'initSand', sandOwner);
   await tx(proxyAsAdmin, 'upgradeToAndCall', {from: user2, gas}, sand777.options.address, initData);
 });
 
@@ -97,8 +96,8 @@ t.test('new admin cannot transfer ', async () => {
 t.test('new admin owner can upgrade via admin', async () => {
   const {admin} = await deployProxiedSand20();
   await tx(admin, 'transferOwnership', {from: creator, gas}, user2);
-  const sand777 = await deployContract(creator, 'Sand777', sandOwner, chainId);
-  const initData = encodeCall(sand777, 'initSand', sandOwner, chainId);
+  const sand777 = await deployContract(creator, 'Sand777', sandOwner);
+  const initData = encodeCall(sand777, 'initSand', sandOwner);
   await tx(admin, 'upgradeToAndCall', {from: user2, gas}, sand777.options.address, initData);
 });
 

@@ -31,13 +31,13 @@
     "ganache-cli": "^6.2.3",
     "geth-binary": "^0.1.3",
     "minimist": "^1.2.0",
-    "rocketh": "^0.2.26",
+    "rocketh": "^0.2.29",
     "solc": "^0.5.2",
     "solium": "^1.1.7",
     "tap": "^12.1.0",
     "web3": "1.0.0-beta.33"
   },
   "dependencies": {
-    "rocketh-web3": "^0.2.1"
+    "rocketh-web3": "^0.2.2"
   }
 }

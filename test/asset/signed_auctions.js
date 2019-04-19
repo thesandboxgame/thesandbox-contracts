@@ -6,7 +6,6 @@ const ethSigUtil = require('eth-sig-util');
 const ethUtil = require('ethereumjs-util');
 const rocketh = require('rocketh');
 const accounts = rocketh.accounts;
-const chainId = rocketh.chainId;
 
 const {
     getEventsFromReceipt,
@@ -23,6 +22,7 @@ const {
     sendTransaction,
     sendSignedTransaction,
     encodeCall,
+    emptyBytes,
 } = require('../utils');
 
 const {
@@ -52,7 +52,7 @@ const ipfsHashString = 'ipfs://QmYwAPJzv5CZsnA625s3Xf2nemtYgPpHdWEz79ojWnPbdG';
 
 function runSignedAuctionsTests(title, resetContracts) {
     tap.test(title + ' signed auctions', async (t)=> {
-
+        
         const privateKey = ethUtil.sha3('cow');
         const testAddress = toChecksumAddress(ethUtil.privateToAddress(privateKey).toString('hex'));
 
@@ -60,7 +60,6 @@ function runSignedAuctionsTests(title, resetContracts) {
         const domainType = [
             {name: 'name', type: 'string'},
             {name: 'version', type: 'string'},
-            {name: 'chainId', type: 'uint256'},
             {name: 'verifyingContract', type: 'address'}
         ];
         const auctionType = [
@@ -90,7 +89,6 @@ function runSignedAuctionsTests(title, resetContracts) {
             return {
                 name: 'The Sandbox 3D',
                 version: '1',
-                chainId,
                 verifyingContract: contracts.AssetSignedAuction.options.address
             };
         }
@@ -156,11 +154,11 @@ function runSignedAuctionsTests(title, resetContracts) {
         }
 
         function assetBalanceOf(...args) {
-            return call(contracts.Asset, 'balanceOf', null, ...args);
+            return call(contracts.Asset, 'balanceOf', {gas}, ...args);
         }
 
         function sandBalanceOf(...args) {
-            return call(contracts.Sand, 'balanceOf', null, ...args);
+            return call(contracts.Sand, 'balanceOf', {gas}, ...args);
         }
         
         t.beforeEach(async () => {
@@ -177,7 +175,7 @@ function runSignedAuctionsTests(title, resetContracts) {
             ];
             offerId = new BN(crypto.randomBytes(32), 16).toString(10);
             startedAt = Math.floor(Date.now() / 1000);
-            await tx(contracts.Asset, 'batchTransferFrom', {from: creator, gas}, creator, testAddress, ids, [100, 200]);
+            await tx(contracts.Asset, 'safeBatchTransferFrom', {from: creator, gas}, creator, testAddress, ids, [100, 200], emptyBytes);
         });
   
         

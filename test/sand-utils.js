@@ -1,7 +1,7 @@
 const sigUtil = require('eth-sig-util');
 const {tx, ethSign, soliditySha3} = require('./utils');
 
-function signEIP712MetaTx(signingAcount, contractAddress, chainId, {from, to, amount, data, nonce, gasPrice, txGas, gasLimit, tokenGasPrice, relayer}, use777) {
+function signEIP712MetaTx(signingAcount, contractAddress, {from, to, amount, data, nonce, gasPrice, txGas, gasLimit, tokenGasPrice, relayer}, use777) {
   const privateKeyAsBuffer = Buffer.from(signingAcount.privateKey.substr(2), 'hex');
   const data712 = {
     types: {
@@ -13,10 +13,6 @@ function signEIP712MetaTx(signingAcount, contractAddress, chainId, {from, to, am
         {
           name: 'version',
           type: 'string'
-        },
-        {
-          name: 'chainId',
-          type: 'uint256'
         },
         {
           name: 'verifyingContract',
@@ -112,7 +108,6 @@ function signEIP712MetaTx(signingAcount, contractAddress, chainId, {from, to, am
     domain: {
       name: 'The Sandbox 3D',
       version: '1',
-      chainId: chainId,
       verifyingContract: contractAddress
     },
     message: {
@@ -131,7 +126,7 @@ function signEIP712MetaTx(signingAcount, contractAddress, chainId, {from, to, am
   return sigUtil.signTypedData(privateKeyAsBuffer, {data: data712});
 }
 
-function signEIP712Approval(signingAcount, contractAddress, chainId, {messageId, target, amount, from}) {
+function signEIP712Approval(signingAcount, contractAddress, {messageId, target, amount, from}) {
   const privateKeyAsBuffer = Buffer.from(signingAcount.privateKey.substr(2), 'hex');
   const data = {
     types: {
@@ -143,10 +138,6 @@ function signEIP712Approval(signingAcount, contractAddress, chainId, {messageId,
         {
           name: 'version',
           type: 'string'
-        },
-        {
-          name: 'chainId',
-          type: 'uint256'
         },
         {
           name: 'verifyingContract',
@@ -176,7 +167,6 @@ function signEIP712Approval(signingAcount, contractAddress, chainId, {messageId,
     domain: {
       name: 'The Sandbox 3D',
       version: '1',
-      chainId: chainId,
       verifyingContract: contractAddress
     },
     message: {
@@ -190,7 +180,7 @@ function signEIP712Approval(signingAcount, contractAddress, chainId, {messageId,
 }
 
 
-function executeMetaTx(signingAccount, tokenContract, chainId, options, {fakeSig, from, nonce, gasPrice, txGas, gasLimit, tokenGasPrice, relayer, tokenDeposit, signedOnBehalf, use777}, receiver, amount, methodName, ...args) {
+function executeMetaTx(signingAccount, tokenContract, options, {fakeSig, from, nonce, gasPrice, txGas, gasLimit, tokenGasPrice, relayer, tokenDeposit, signedOnBehalf, use777}, receiver, amount, methodName, ...args) {
   let callData = '0x';
   let receiverAddress = receiver;
   if(typeof receiver != 'string') {
@@ -202,7 +192,7 @@ function executeMetaTx(signingAccount, tokenContract, chainId, options, {fakeSig
   from = from || signingAccount.address;
 
   if(fakeSig) {
-    signature = signEIP712MetaTx(signingAccount, tokenContract.options.address, chainId, {
+    signature = signEIP712MetaTx(signingAccount, tokenContract.options.address, {
       from,
       to: receiverAddress,
       amount,
@@ -215,7 +205,7 @@ function executeMetaTx(signingAccount, tokenContract, chainId, options, {fakeSig
       relayer
     }, use777);
   } else {
-    signature = signEIP712MetaTx(signingAccount, tokenContract.options.address, chainId, {
+    signature = signEIP712MetaTx(signingAccount, tokenContract.options.address, {
       from,
       to: receiverAddress,
       amount,

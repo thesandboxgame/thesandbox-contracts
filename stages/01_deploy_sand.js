@@ -73,7 +73,6 @@ module.exports = async ({namedAccounts}) => {
       sandImplementationContractName,
       deployer,
       actualSandbeneficiary,
-      chainId
   );
   const sandImplementation = sandDeployResult.contract;
   // console.log('sandImplementation', sandImplementation.options.address);
@@ -85,8 +84,7 @@ module.exports = async ({namedAccounts}) => {
 
   const initData = sandImplementation.methods['initSand'](
       actualSandOwner,
-      actualSandbeneficiary,
-      chainId
+      actualSandbeneficiary
   ).encodeABI();
   if(!sand) {
       const deployResult = await deploy(
@@ -117,8 +115,7 @@ module.exports = async ({namedAccounts}) => {
           transactionHash,
           sandImplementationContractName,
           deployer,
-          actualSandbeneficiary,
-          chainId
+          actualSandbeneficiary
       );
   } else {
       const different = await fetchIfDifferent(['data'],

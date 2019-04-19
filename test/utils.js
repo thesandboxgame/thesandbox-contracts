@@ -9,7 +9,7 @@ web3.setProvider(rocketh.ethereum);
 // const truffleConfig = require('../../truffle-config.js');
 
 const gas = 4000000;
-const deployGas = 6000000;
+const deployGas = 6721975; // 6000000;
 
 function getEventsFromReceipt(contract, sig, receipt) {
   return contract.getPastEvents(sig, {

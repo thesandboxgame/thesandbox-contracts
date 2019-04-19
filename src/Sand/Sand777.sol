@@ -10,12 +10,12 @@ import "./erc777/ERC777MetaTxExtension.sol";
 contract Sand777 is ERC777MetaTxExtension, ProxyImplementation, ERC20ApproveExtension, TheSandbox712, ERC777BaseToken {
 
     // TODO add _owners
-    constructor(address _beneficiary, uint256 _chainId) public {
-        initSand(_beneficiary, _chainId);
+    constructor(address _beneficiary) public {
+        initSand(_beneficiary);
     }
     // TODO need to be updated if updating inheritance  // better pattern ?
-    function initSand(address _beneficiary, uint256 _chainId) public phase('SAND_777') {
-        init712(_chainId);
+    function initSand(address _beneficiary) public phase('SAND_777') {
+        init712();
         init777(); 
         if(mTotalSupply == 0 ) { _mint(_beneficiary, 3000000000000000000000000000); }
     }

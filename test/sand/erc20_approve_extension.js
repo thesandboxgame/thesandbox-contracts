@@ -33,7 +33,6 @@ const user2 = toChecksumAddress(accounts[2]);
 const user3 = toChecksumAddress(accounts[3]);
 const operator = toChecksumAddress(accounts[4]);
 const executor = toChecksumAddress(accounts[5]);
-const chainId = rocketh.chainId;
 
 const signingAcount = {
   address: '0xFA8A6079E7B85d1be95B6f6DE1aAE903b6F40c00',
@@ -202,7 +201,7 @@ function runERC20ApproveExtensionTests(title, resetContract) {
     });
 
     t.test('approveViaSignature', async () => {
-      const signature = signEIP712Approval(signingAcount, contract.options.address, chainId, {messageId: 1, target: user2, amount:10000});
+      const signature = signEIP712Approval(signingAcount, contract.options.address, {messageId: 1, target: user2, amount:10000});
       await tx(contract, 'approveViaSignature', {from: user2, gas}, signingAcount.address, 1, user2, 10000, signature, false);
       await transferFrom(contract, signingAcount.address, user2, 1000, {from: user2, gas});
       const user2Balance = await getERC20Balance(contract, user2);
@@ -211,29 +210,29 @@ function runERC20ApproveExtensionTests(title, resetContract) {
       assert.equal(user2Balance.toString(10), '1000');
     });
     t.test('approveViaSignature fails if approved for someone else', async () => {
-      const signature = signEIP712Approval(signingAcount, contract.options.address, chainId, {messageId: 1, target: user3, amount: 10000});
+      const signature = signEIP712Approval(signingAcount, contract.options.address, {messageId: 1, target: user3, amount: 10000});
       await tx(contract, 'approveViaSignature', {from: user2, gas}, signingAcount.address, 1, user3, 10000, signature, false);
       await expectThrow(transferFrom(contract, signingAcount.address, user2, 1000, {from: user2, gas}));
     });
     t.test('approveViaSignature fails if not enough allowance', async () => {
-      const signature = signEIP712Approval(signingAcount, contract.options.address, chainId, {messageId: 1, target: user2, amount:1000});
+      const signature = signEIP712Approval(signingAcount, contract.options.address, {messageId: 1, target: user2, amount:1000});
       await tx(contract, 'approveViaSignature', {from: user2, gas}, signingAcount.address, 1, user2, 1000, signature, false);
       await expectThrow(transferFrom(contract, signingAcount.address, user2, 10000, {from: user2, gas}));
     });
     t.test('approveViaSignature fails if wrong signature', async () => {
-      const signature = signEIP712Approval(signingAcount, contract.options.address, chainId, {messageId: 1, target: user2, amount:1000});
+      const signature = signEIP712Approval(signingAcount, contract.options.address, {messageId: 1, target: user2, amount:1000});
       await expectThrow(tx(contract, 'approveViaSignature', {from: user2, gas}, signingAcount.address, 1, user2, 10000, signature, false));
     });
 
     t.test('approveViaSignature fails if used second time', async () => {
-      const signature = signEIP712Approval(signingAcount, contract.options.address, chainId, {messageId: 1, target: user2, amount:10000});
+      const signature = signEIP712Approval(signingAcount, contract.options.address, {messageId: 1, target: user2, amount:10000});
       await tx(contract, 'approveViaSignature', {from: user2, gas}, signingAcount.address, 1, user2, 10000, signature, false);
       await expectThrow(tx(contract, 'approveViaSignature', {from: user2, gas}, signingAcount.address, 1, user2, 10000, signature, false));
     });
 
     t.test('approveViaSignature fails if used after being revoked', async () => {
       await sendTransaction({from: sandOwner, gas, to: signingAcount.address, value: 1000000000000000000}); // give some eth so signer can revoke
-      const signature = signEIP712Approval(signingAcount, contract.options.address, chainId, {messageId: 1, target: user2, amount:10000});
+      const signature = signEIP712Approval(signingAcount, contract.options.address, {messageId: 1, target: user2, amount:10000});
       const callData = encodeCall(contract, 'revokeApprovalMessage', 1);
       await sendSignedTransaction(callData, contract.options.address, signingAcount.privateKey);
       await expectThrow(tx(contract, 'approveViaSignature', {from: user2, gas}, signingAcount.address, 1, user2, 10000, signature, false));
@@ -242,7 +241,7 @@ function runERC20ApproveExtensionTests(title, resetContract) {
     t.test('approveViaSignature on behalf of identity contract', async () => {
       const IdentityContract = await deployContract(creator, 'ERC1271Wallet', otherSigner.address);
       await transfer(contract, IdentityContract.options.address, '1000000', {from: sandOwner, gas});
-      const signature = signEIP712Approval(otherSigner, contract.options.address, chainId, {messageId: 1, target: user2, amount:10000, from: IdentityContract.options.address});
+      const signature = signEIP712Approval(otherSigner, contract.options.address, {messageId: 1, target: user2, amount:10000, from: IdentityContract.options.address});
       await tx(contract, 'approveViaSignature', {from: user2, gas}, IdentityContract.options.address, 1, user2, 10000, signature, true);
       await transferFrom(contract, IdentityContract.options.address, user2, 1000, {from: user2, gas});
       const user2Balance = await getERC20Balance(contract, user2);
@@ -254,7 +253,7 @@ function runERC20ApproveExtensionTests(title, resetContract) {
     t.test('approveViaSignature on behalf of identity contract fails if not approved', async () => {
       const IdentityContract = await deployContract(creator, 'ERC1271Wallet', signingAcount.address);
       await transfer(contract, IdentityContract.options.address, '1000000', {from: sandOwner, gas});
-      const signature = signEIP712Approval(otherSigner, contract.options.address, chainId, {messageId: 1, target: user2, amount:10000, from: IdentityContract.options.address});
+      const signature = signEIP712Approval(otherSigner, contract.options.address, {messageId: 1, target: user2, amount:10000, from: IdentityContract.options.address});
       await expectThrow(tx(contract, 'approveViaSignature', {from: user2, gas}, IdentityContract.options.address, 1, user2, 10000, signature, true));
     });
   });

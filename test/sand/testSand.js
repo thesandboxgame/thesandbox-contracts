@@ -31,7 +31,6 @@ const {
 
 const rocketh = require('rocketh');
 const accounts = rocketh.accounts;
-const chainId = rocketh.chainId;
 
 const creator = toChecksumAddress(accounts[0]);
 const sandOwner = creator;
@@ -46,7 +45,7 @@ async function nonUpgradeableBasicSand() {
 
 async function nonUpgradeableSand() {
   const contracts = {};
-  contracts.Sand = await deployContract(creator, 'Sand20', sandOwner, sandOwner, chainId);
+  contracts.Sand = await deployContract(creator, 'Sand20', sandOwner, sandOwner);
   await transfer(contracts.Sand, user1, '1000000', {from: creator, gas});
   return contracts.Sand;
 }
@@ -54,7 +53,7 @@ async function nonUpgradeableSand() {
 
 async function nonUpgradeableSand777() {
   const contracts = {};
-  contracts.Sand = await deployContract(creator, 'Sand777', sandOwner, chainId);
+  contracts.Sand = await deployContract(creator, 'Sand777', sandOwner);
   await transfer(contracts.Sand, user1, '1000000', {from: creator, gas});
   return contracts.Sand;
 }
@@ -72,8 +71,8 @@ async function upgradableBasicSand() {
 
 async function upgradableSand() {
   const contracts = {};
-  contracts.Sand20 = await deployContract(creator, 'Sand20', sandOwner, sandOwner, chainId);
-  const initData = encodeCall(contracts.Sand20, 'initSand', sandOwner, sandOwner, chainId);
+  contracts.Sand20 = await deployContract(creator, 'Sand20', sandOwner, sandOwner);
+  const initData = encodeCall(contracts.Sand20, 'initSand', sandOwner, sandOwner);
   contracts.AdminUpgradeabilityProxy = await deployContract(creator, 'AdminUpgradeabilityProxy', creator,  contracts.Sand20.options.address, initData);
   contracts.Sand = instantiateContract(contracts.Sand20.options.jsonInterface, contracts.AdminUpgradeabilityProxy.options.address);
   await transfer(contracts.Sand, user1, '1000000', {from: sandOwner, gas});
@@ -82,8 +81,8 @@ async function upgradableSand() {
 
 async function upgradableSandWithMetaTransactions() {
   const contracts = {};
-  contracts.Sand20 = await deployContract(creator, 'Sand20', sandOwner, sandOwner, chainId);
-  const initData = encodeCall(contracts.Sand20, 'initSand', sandOwner, sandOwner, chainId);
+  contracts.Sand20 = await deployContract(creator, 'Sand20', sandOwner, sandOwner);
+  const initData = encodeCall(contracts.Sand20, 'initSand', sandOwner, sandOwner);
   contracts.AdminUpgradeabilityProxy = await deployContract(creator, 'AdminUpgradeabilityProxy', creator,  contracts.Sand20.options.address, initData);
   contracts.Sand = instantiateContract(contracts.Sand20.options.jsonInterface, contracts.AdminUpgradeabilityProxy.options.address);
   await transfer(contracts.Sand, user1, '1000000', {from: sandOwner, gas});
@@ -92,16 +91,16 @@ async function upgradableSandWithMetaTransactions() {
 
 async function erc777UpgradedFrom20() {
   const contracts = {};
-  contracts.Sand20 = await deployContract(creator, 'Sand20', sandOwner, sandOwner, chainId);
-  const initData = encodeCall(contracts.Sand20, 'initSand', sandOwner, sandOwner, chainId);
-  contracts.Sand777 = await deployContract(creator, 'Sand777', sandOwner, chainId);
+  contracts.Sand20 = await deployContract(creator, 'Sand20', sandOwner, sandOwner);
+  const initData = encodeCall(contracts.Sand20, 'initSand', sandOwner, sandOwner);
+  contracts.Sand777 = await deployContract(creator, 'Sand777', sandOwner);
   contracts.AdminUpgradeabilityProxy = await deployContract(creator, 'AdminUpgradeabilityProxy', creator, contracts.Sand20.options.address, initData);
   const matchingEvents = await contracts.AdminUpgradeabilityProxy.getPastEvents('AdminChanged');
   const adminAddress = matchingEvents[0].returnValues.newAdmin;
   const ProxyAdminContractInfo = rocketh.contractInfo('ProxyAdmin');
   contracts.ProxyAdmin = instantiateContract(ProxyAdminContractInfo.abi, adminAddress);
   contracts.Sand = instantiateContract(contracts.Sand777.options.jsonInterface, contracts.AdminUpgradeabilityProxy.options.address);
-  const sand777InitData = encodeCall(contracts.Sand777, 'initSand', sandOwner, chainId);
+  const sand777InitData = encodeCall(contracts.Sand777, 'initSand', sandOwner);
   await tx(contracts.ProxyAdmin, 'upgradeToAndCall', {from: creator, gas}, contracts.Sand777.options.address, sand777InitData);
   await transfer(contracts.Sand, user1, '1000000', {from: sandOwner, gas});
   return contracts.Sand;
@@ -109,16 +108,16 @@ async function erc777UpgradedFrom20() {
 
 async function erc777UpgradedFrom20WithMetaTransactions() {
   const contracts = {};
-  contracts.Sand20 = await deployContract(creator, 'Sand20', sandOwner, sandOwner, chainId);
-  const initData = encodeCall(contracts.Sand20, 'initSand', sandOwner, sandOwner, chainId);
-  contracts.Sand777 = await deployContract(creator, 'Sand777', sandOwner, chainId);
+  contracts.Sand20 = await deployContract(creator, 'Sand20', sandOwner, sandOwner);
+  const initData = encodeCall(contracts.Sand20, 'initSand', sandOwner, sandOwner);
+  contracts.Sand777 = await deployContract(creator, 'Sand777', sandOwner);
   contracts.AdminUpgradeabilityProxy = await deployContract(creator, 'AdminUpgradeabilityProxy', creator, contracts.Sand20.options.address, initData);
   const matchingEvents = await contracts.AdminUpgradeabilityProxy.getPastEvents('AdminChanged');
   const adminAddress = matchingEvents[0].returnValues.newAdmin;
   const ProxyAdminContractInfo = rocketh.contractInfo('ProxyAdmin');
   contracts.ProxyAdmin = instantiateContract(ProxyAdminContractInfo.abi, adminAddress);
   contracts.Sand = instantiateContract(contracts.Sand777.options.jsonInterface, contracts.AdminUpgradeabilityProxy.options.address);
-  const sand777InitData = encodeCall(contracts.Sand777, 'initSand', sandOwner, chainId);
+  const sand777InitData = encodeCall(contracts.Sand777, 'initSand', sandOwner);
   await tx(contracts.ProxyAdmin, 'upgradeToAndCall', {from: creator, gas}, contracts.Sand777.options.address, sand777InitData);
   await transfer(contracts.Sand, user1, '1000000', {from: sandOwner, gas});
   return contracts.Sand;
@@ -126,16 +125,16 @@ async function erc777UpgradedFrom20WithMetaTransactions() {
 
 async function upgradedTo777AndThenDowngradedTo20() {
   const contracts = {};
-  contracts.Sand20 = await deployContract(creator, 'Sand20', sandOwner, sandOwner, chainId);
-  const initData = encodeCall(contracts.Sand20, 'initSand', sandOwner, sandOwner, chainId);
-  contracts.Sand777 = await deployContract(creator, 'Sand777', sandOwner, chainId);
+  contracts.Sand20 = await deployContract(creator, 'Sand20', sandOwner, sandOwner);
+  const initData = encodeCall(contracts.Sand20, 'initSand', sandOwner, sandOwner);
+  contracts.Sand777 = await deployContract(creator, 'Sand777', sandOwner);
   contracts.AdminUpgradeabilityProxy = await deployContract(creator, 'AdminUpgradeabilityProxy', creator, contracts.Sand20.options.address, initData);
   const matchingEvents = await contracts.AdminUpgradeabilityProxy.getPastEvents('AdminChanged');
   const adminAddress = matchingEvents[0].returnValues.newAdmin;
   const ProxyAdminContractInfo = rocketh.contractInfo('ProxyAdmin');
   contracts.ProxyAdmin = instantiateContract(ProxyAdminContractInfo.abi, adminAddress);
   contracts.Sand = instantiateContract(contracts.Sand20.options.jsonInterface, contracts.AdminUpgradeabilityProxy.options.address);
-  const sand777InitData = encodeCall(contracts.Sand777, 'initSand', sandOwner, chainId);
+  const sand777InitData = encodeCall(contracts.Sand777, 'initSand', sandOwner);
   await tx(contracts.ProxyAdmin, 'upgradeToAndCall', {from: creator, gas}, contracts.Sand777.options.address, sand777InitData);
   await tx(contracts.ProxyAdmin, 'upgradeTo', {from: creator, gas}, contracts.Sand20.options.address);
   await transfer(contracts.Sand, user1, '1000000', {from: sandOwner, gas});

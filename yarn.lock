@@ -5380,15 +5380,15 @@ rlp@^2.0.0:
   dependencies:
     safe-buffer "^5.1.1"
 
-rocketh-web3@^0.2.1:
-  version "0.2.1"
-  resolved "https://registry.yarnpkg.com/rocketh-web3/-/rocketh-web3-0.2.1.tgz#9554275863b9ad2a23d0868cd994da016765dbbb"
-  integrity sha512-4a5/BriN6yfbUHzcoTEyRbvydgqeLlUd9H0LNq7eHRJNE9wtYZfda6qMXBdgjFzAzv4yHH5MzP/Jwy7bFgRrdQ==
+rocketh-web3@^0.2.2:
+  version "0.2.2"
+  resolved "https://registry.yarnpkg.com/rocketh-web3/-/rocketh-web3-0.2.2.tgz#51eadf02b45a976d982c2ca9186a020dfb66dfba"
+  integrity sha512-MMJwg4PC3wtuKQ6Qb7lTT/1NSVl1nmgJQPHHW4WD2oe614BoJHQB+mAagdTq607bF141aPfNFxHb4E5UeL/u2A==
 
-rocketh@^0.2.26:
-  version "0.2.26"
-  resolved "https://registry.yarnpkg.com/rocketh/-/rocketh-0.2.26.tgz#b1097da6ac7f694afb97d49dedee5b2de6837dfc"
-  integrity sha512-13Cnk3uD9NJ2GaOQpjA9WHgokvZWnUG9/LIiPaoM5cMVSuIzHaOaOrmvgOiEdn8mVMy6RPyBo6RUaooq4qDr5Q==
+rocketh@^0.2.29:
+  version "0.2.29"
+  resolved "https://registry.yarnpkg.com/rocketh/-/rocketh-0.2.29.tgz#8f35b3dc067ec1bf0e21c3e509019b276bce666d"
+  integrity sha512-k9rFOSN3Sqh8DNbAPF1F5KUM0OjUsc/xczU0o7hrbOlxHeUxb0bLzRXuQVX+sVJJgnslL+FRZTDz1U5CE0QkrA==
   dependencies:
     "@rauschma/stringio" "^1.4.0"
     armlet "^2.0.1"

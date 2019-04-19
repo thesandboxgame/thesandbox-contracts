@@ -3,14 +3,15 @@ const rocketh = require('rocketh');
 const {
   tx,
   deployIfDifferent,
-  getDeployedContract
+  getDeployedContract,
+  fetchReceipt,
 } = require('rocketh-web3')(rocketh, Web3); 
 
 const chainId = rocketh.chainId;
 
-const gas = 6500000;
+const gas = 6721975; //7500000
 
-module.exports = async ({namedAccounts}) => {
+module.exports = async ({namedAccounts, initialRun}) => {
   const {
     deployer,
     mintingFeeCollector,
@@ -18,24 +19,28 @@ module.exports = async ({namedAccounts}) => {
   } = namedAccounts; 
 
   const sandContract = getDeployedContract('Sand');
-  await deployIfDifferent(['data'],
+  const {transactionHash} = await deployIfDifferent(['data'],
     'Asset',
     {from: deployer, gas},
     'Asset',
     sandContract.options.address,
     mintingFeeCollector,
-    deployer,
-    chainId
+    deployer
   );
+  if(initialRun) {
+    const receipt = await fetchReceipt(transactionHash);
+    console.log('Asset deployed using ' + receipt.gasUsed + ' gas');
+  }
 
   const assetContract = getDeployedContract('Asset');
+  await tx({from: deployer, gas}, sandContract, "setSuperOperator", assetContract.options.address, true);
+
   await deployIfDifferent(['data'],
     'AssetSignedAuction',
     {from: deployer, gas},
     'AssetSignedAuction',
     sandContract.options.address,
-    assetContract.options.address,
-    chainId
+    assetContract.options.address
   );
 
   const assetSignedAuctionContract = getDeployedContract('AssetSignedAuction');

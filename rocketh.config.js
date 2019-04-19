@@ -9,6 +9,9 @@ module.exports = {
             type: 'bitski'
         }
     },
+    // ganacheOptions: {
+    //     gasLimit: "7500000"
+    // },
     namedAccounts : {
         deployer: 0, // when a number specify fro default the index in accounts
         metaTransactionFundOwner: 0, // TODO

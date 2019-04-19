@@ -40,10 +40,10 @@ contract AssetSignedAuction is TheSandbox712{
 
     Asset asset;
     Sand sand;
-    constructor(Sand _sand, Asset _asset, uint256 _chainId) public {
+    constructor(Sand _sand, Asset _asset) public {
         asset = _asset;
         sand = _sand;
-        init712(_chainId);
+        init712();
     }
 
     function claimSellerOffer(
@@ -102,7 +102,7 @@ contract AssetSignedAuction is TheSandbox712{
         for(uint256 i = 0; i < packAmounts.length; i++){
             packAmounts[i] = amounts[i] * buyAmount;
         }
-        asset.batchTransferFrom(seller, buyer, ids, packAmounts);
+        asset.safeBatchTransferFrom(seller, buyer, ids, packAmounts, '');
     }
 
     function cancelSellerOffer(uint256 offerId) external {

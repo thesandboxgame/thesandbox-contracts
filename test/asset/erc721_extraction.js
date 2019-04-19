@@ -12,6 +12,7 @@ const {
     gas,
     expectThrow,
     zeroAddress,
+    emptyBytes,
 } = require('../utils');
 
 const {
@@ -97,7 +98,7 @@ function runERC721ExtractionTests(title, resetContract) {
     
         t.test('should be able to extract if not creator', async () => {
             const tokenId = await mintAndReturnTokenId(contract, ipfsHashString, 100, creator);
-            await tx(contract, 'transferFrom', {from: creator, gas}, creator, user1, tokenId, 1);
+            await tx(contract, 'safeTransferFrom', {from: creator, gas}, creator, user1, tokenId, 1, emptyBytes);
             const receipt = await tx(contract, 'extractERC721', {from: user1, gas}, user1, tokenId, ipfsHashString);
             const extractionEvent = await getEventsFromReceipt(contract, ExtractionEvent, receipt);
             const newTokenId = extractionEvent[0].returnValues._toId;
@@ -107,7 +108,7 @@ function runERC721ExtractionTests(title, resetContract) {
     
         t.test('should have same creator', async () => {
             const tokenId = await mintAndReturnTokenId(contract, ipfsHashString, 100, creator);
-            await tx(contract, 'transferFrom', {from: creator, gas}, creator, user1, tokenId, 1);
+            await tx(contract, 'safeTransferFrom', {from: creator, gas}, creator, user1, tokenId, 1, emptyBytes);
             const receipt = await tx(contract, 'extractERC721', {from: user1, gas}, user1, tokenId, ipfsHashString);
             const extractionEvent = await getEventsFromReceipt(contract, ExtractionEvent, receipt);
             const newTokenId = extractionEvent[0].returnValues._toId;
@@ -156,7 +157,7 @@ function runERC721ExtractionTests(title, resetContract) {
         t.test('last token should be transferable as an ERC1155 without emitting ERC721 events', async () => {
             const tokenId = await mintAndReturnTokenId(contract, ipfsHashString, 2, creator);
             await tx(contract, 'extractERC721', {from: creator, gas}, creator, tokenId, ipfsHashString);
-            const receipt = await tx(contract, 'transferFrom', {from: creator, gas}, creator, user1, tokenId, 1);
+            const receipt = await tx(contract, 'safeTransferFrom', {from: creator, gas}, creator, user1, tokenId, 1, emptyBytes);
             const eventsMatching = await getEventsFromReceipt(contract, TransferEvent, receipt);
             assert.equal(eventsMatching.length, 0);
         });

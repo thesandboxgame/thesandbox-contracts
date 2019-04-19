@@ -45,7 +45,6 @@ const user2 = toChecksumAddress(accounts[2]);
 const user3 = toChecksumAddress(accounts[3]);
 const operator = toChecksumAddress(accounts[4]);
 const executor = toChecksumAddress(accounts[5]);
-const chainId = rocketh.chainId;
 
 const MetaTxEvent = encodeEventSignature('MetaTx(address,uint256,bool,bytes)');
 
@@ -81,7 +80,6 @@ function runMetaTxExtensionTests(title, resetContract, use777) {
     t.test('executeMetaTx simple transfer', async () => {
       const receipt = await executeMetaTx(signingAcount,
         contract,
-        chainId,
         {from:executor, gas, gasPrice:1},
         {nonce:1, gasPrice:1, txGas: 2000000, gasLimit:2000000+112000, tokenGasPrice:1, relayer: zeroAddress, tokenDeposit: executor, use777},
         user2,
@@ -99,7 +97,6 @@ function runMetaTxExtensionTests(title, resetContract, use777) {
     t.test('executeMetaTx simple transfer fail if wrong signature', async () => {
       await expectThrow(executeMetaTx(signingAcount,
         contract,
-        chainId,
         {from:executor, gas, gasPrice:1},
         {fakeSig: true, nonce:1, gasPrice:1, txGas: 2000000, gasLimit:2000000+112000, tokenGasPrice:1, relayer: zeroAddress, tokenDeposit: executor, use777},
         user2,
@@ -143,7 +140,6 @@ function runMetaTxExtensionTests(title, resetContract, use777) {
       await transfer(contract, identityAddress, initialSand.toString(10), {from: sandOwner, gas});
       const receipt = await executeMetaTx(signingAcount,
         contract,
-        chainId,
         {from:executor, gas, gasPrice:1},
         {from: identityAddress, nonce:1, gasPrice:1, txGas:2000000, gasLimit:2000000+112000, tokenGasPrice:1, relayer: zeroAddress, tokenDeposit: executor, signedOnBehalf: true, use777},
         user2,
@@ -164,7 +160,6 @@ function runMetaTxExtensionTests(title, resetContract, use777) {
       await transfer(contract, identityAddress, initialSand.toString(10), {from: sandOwner, gas});
       await expectThrow(executeMetaTx(signingAcount,
         contract,
-        chainId,
         {from:executor, gas, gasPrice:1},
         {from: identityAddress, nonce:1, gasPrice:1, txGas:2000000, gasLimit:2000000+112000, tokenGasPrice:1, relayer: zeroAddress, tokenDeposit: executor, signedOnBehalf: true, use777},
         user2,
@@ -177,7 +172,6 @@ function runMetaTxExtensionTests(title, resetContract, use777) {
       await transfer(contract, identityAddress, initialSand.toString(10), {from: sandOwner, gas});
       await expectThrow(executeMetaTx(signingAcount,
         contract,
-        chainId,
         {from:executor, gas, gasPrice:1},
         {fakeSig: true, from: identityAddress, nonce:1, gasPrice:1, txGas:2000000, gasLimit:2000000+112000, tokenGasPrice:1, relayer: zeroAddress, tokenDeposit: executor, signedOnBehalf: true, use777},
         user2,
@@ -192,7 +186,6 @@ function runMetaTxExtensionTests(title, resetContract, use777) {
       const receiverAddress = receiverContract.options.address;
       const receipt = await executeMetaTx(signingAcount,
         contract,
-        chainId,
         {from:executor, gas, gasPrice:1},
         {nonce:1, gasPrice:1, txGas: 2000000, gasLimit:2000000+112000, tokenGasPrice:1, relayer: zeroAddress, tokenDeposit: executor, use777},
         receiverContract,
@@ -214,7 +207,6 @@ function runMetaTxExtensionTests(title, resetContract, use777) {
       const receiverAddress = receiverContract.options.address;
       const receipt = await executeMetaTx(signingAcount,
         contract,
-        chainId,
         {from:executor, gas, gasPrice:1},
         {nonce:1, gasPrice:1, txGas: 2000000, gasLimit:2000000+112000, tokenGasPrice:1, relayer: zeroAddress, tokenDeposit: executor, use777},
         receiverContract,
@@ -294,7 +286,6 @@ function runMetaTxExtensionTests(title, resetContract, use777) {
       await transfer(contract, identityAddress, initialSand.toString(10), {from: sandOwner, gas});
       await executeMetaTx(signingAcount,
         contract,
-        chainId,
         {from:executor, gas, gasPrice:1},
         {from: identityAddress, nonce:1, gasPrice:1, txGas: 2000000, gasLimit:2000000+112000, tokenGasPrice:1, relayer: zeroAddress, tokenDeposit: executor, signedOnBehalf: true, use777},
         receiverContract,
@@ -317,7 +308,6 @@ function runMetaTxExtensionTests(title, resetContract, use777) {
       await transfer(contract, identityAddress, initialSand.toString(10), {from: sandOwner, gas});
       await executeMetaTx(signingAcount,
         contract,
-        chainId,
         {from:executor, gas, gasPrice:1},
         {from: identityAddress, nonce:1, gasPrice:1, txGas: 2000000, gasLimit:2000000+112000, tokenGasPrice:1, relayer: zeroAddress, tokenDeposit: executor, signedOnBehalf: true, use777},
         receiverContract,
@@ -335,7 +325,6 @@ function runMetaTxExtensionTests(title, resetContract, use777) {
       await transfer(contract, identityAddress, initialSand.toString(10), {from: sandOwner, gas});
       await expectThrow(executeMetaTx(signingAcount,
         contract,
-        chainId,
         {from:executor, gas, gasPrice:1},
         {from: identityAddress, nonce:1, gasPrice:1, txGas:2000000, gasLimit:2000000+112000, tokenGasPrice:1, relayer: zeroAddress, tokenDeposit: executor, signedOnBehalf: true, use777},
         receiverContract,
@@ -350,7 +339,6 @@ function runMetaTxExtensionTests(title, resetContract, use777) {
       const receiverAddress = GasDrain.options.address;
       const receipt = await executeMetaTx(signingAcount,
         contract,
-        chainId,
         {from:executor, gas: gasProvided, gasPrice:1},
         {nonce:1, gasPrice:1, txGas, gasLimit:txGas+112000, tokenGasPrice:1, relayer: zeroAddress, tokenDeposit: executor, use777},
         GasDrain,
@@ -368,7 +356,6 @@ function runMetaTxExtensionTests(title, resetContract, use777) {
 
       await expectThrow(executeMetaTx(signingAcount,
         contract,
-        chainId,
         {from:executor, gas: gasProvided, gasPrice:1},
         {nonce:1, gasPrice:1, txGas, gasLimit, tokenGasPrice:1, relayer: zeroAddress, tokenDeposit: executor, use777},
         GasDrain,
@@ -385,7 +372,6 @@ function runMetaTxExtensionTests(title, resetContract, use777) {
 
       await expectThrow(executeMetaTx(signingAcount,
           contract,
-          chainId,
           {from:executor, gas: gasProvided, gasPrice:1},
           {nonce:1, gasPrice:1, txGas, gasLimit, tokenGasPrice:1, relayer: zeroAddress, tokenDeposit: executor, use777},
           GasDrain,
@@ -405,7 +391,6 @@ function runMetaTxExtensionTests(title, resetContract, use777) {
 
     //   const receipt = await executeMetaTx(signingAcount,
     //     contract,
-    //     chainId,
     //     {from:executor, gas: gasProvided, gasPrice:1},
     //     {nonce:1, gasPrice:1, txGas, gasLimit, tokenGasPrice:1, relayer: zeroAddress, tokenDeposit: executor, use777},
     //     GasDrain,
