@@ -2,7 +2,7 @@ pragma solidity 0.5.2;
 
 import { ERC777BaseToken } from "../ERC777BaseToken.sol";
 
-import { Ownable } from "../../../Libraries/ownership/Ownable.sol";
+import { Ownable } from "../../../../contracts_common/src/BaseWithStorage/Ownable.sol";
 
 contract ERC777WithOptionalERC20 is ERC777BaseToken, Ownable {
 

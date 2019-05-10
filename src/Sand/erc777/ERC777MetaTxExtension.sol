@@ -1,8 +1,8 @@
 pragma solidity 0.5.2;
 
-import "../../Libraries/BytesUtil.sol";
-import "../../Libraries/SigUtil.sol";
-import "../../Libraries/SafeMath.sol";
+import "../../../contracts_common/src/Libraries/BytesUtil.sol";
+import "../../../contracts_common/src/Libraries/SigUtil.sol";
+import "../../../contracts_common/src/Libraries/SafeMath.sol";
 import "../erc20/ERC20MetaTxExtension.sol";
 
 // TODO WORK IN PROGRESS

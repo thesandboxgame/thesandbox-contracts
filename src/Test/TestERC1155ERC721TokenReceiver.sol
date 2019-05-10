@@ -1,33 +1,36 @@
 pragma solidity 0.5.2;
 
-contract TestERC1155Receiver {
+contract TestERC1155ERC721TokenReceiver {
 
     bool private allowTokensReceived;
     bool private returnCorrectBytes;
     bool private allowBatchTokensReceived;
     bool private returnCorrectBytesOnBatch;
+    bool private doNotThrow;
 
     address private owner;
     address private tokenContract;
     mapping(uint256 => bool) private tokens;
 
-    bytes4 constant private ERC1155_REJECTED = 0xafed434d; // TODO use it
+    bytes4 constant private ERC1155_EXPECT = 0xbb74d243;
     bytes4 constant private ERC1155_RECEIVED = 0xf23a6e61;
     bytes4 constant private ERC1155_BATCH_RECEIVED = 0xbc197c81;
+    bytes4 private constant _ERC721_RECEIVED = 0x150b7a02;
 
     constructor(
         address _tokenContract,
         bool _allowTokensReceived,
         bool _returnCorrectBytes,
         bool _allowBatchTokensReceived,
-        bool _returnCorrectBytesOnBatch
+        bool _returnCorrectBytesOnBatch,
+        bool _doNotThrow
     ) public {
         tokenContract = _tokenContract;
         allowTokensReceived = _allowTokensReceived;
         returnCorrectBytes = _returnCorrectBytes;
         allowBatchTokensReceived = _allowBatchTokensReceived;
         returnCorrectBytesOnBatch = _returnCorrectBytesOnBatch;
-
+        doNotThrow = _doNotThrow;
         owner = msg.sender;
     }
 
@@ -45,12 +48,28 @@ contract TestERC1155Receiver {
         bytes calldata _data
     ) external returns(bytes4){
         require(address(tokenContract) == msg.sender, "only accept tokenContract as sender");
-        require(allowTokensReceived, "Receive not allowed");
+        require(doNotThrow, "throw requested");
+        if(!allowTokensReceived) {
+            return 0x150b7a03;
+        }
+        
         if(returnCorrectBytes) {
+            (bool success, bytes memory returnData) = tokenContract.call(abi.encodeWithSignature("ownerOf(uint256)", _id));
+            uint256 value;
+            assembly {
+                value := mload(add(returnData, 32))
+            }
+            if(success && value == uint256(address(this))) {
+                onERC721Received(_operator, _from, _id, _data);
+            }
             return ERC1155_RECEIVED;
         } else {
             return 0x150b7a03;
         }
+    }
+
+    function expectERC1155() external pure returns(bytes4) {
+        return ERC1155_EXPECT;
     }
     
     function onERC1155BatchReceived(
@@ -64,6 +83,21 @@ contract TestERC1155Receiver {
         require(allowBatchTokensReceived, "Receive not allowed");
         if(returnCorrectBytesOnBatch) {
             return ERC1155_BATCH_RECEIVED;
+        } else {
+            return 0x150b7a03;
+        }
+    }
+
+    function onERC721Received(
+        address,// operator,
+        address,// from,
+        uint256 _tokenId,
+        bytes memory // data
+      ) public returns (bytes4) {
+        require(address(tokenContract) == msg.sender, "only accept tokenContract as sender");
+        require(allowTokensReceived, "Receive not allowed");
+        if(returnCorrectBytes) {
+            return _ERC721_RECEIVED;
         } else {
             return 0x150b7a03;
         }

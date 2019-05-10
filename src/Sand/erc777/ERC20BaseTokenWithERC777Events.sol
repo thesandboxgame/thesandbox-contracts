@@ -1,6 +1,6 @@
 pragma solidity 0.5.2;
 
-import { ERC777TokenEvents } from "../../Interfaces/ERC777TokenEvents.sol";
+import { ERC777TokenEvents } from "../../../contracts_common/src/Interfaces/ERC777TokenEvents.sol";
 import { ERC20BaseToken } from "../erc20/ERC20BaseToken.sol";
 
 /*

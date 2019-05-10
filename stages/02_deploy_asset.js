@@ -12,10 +12,13 @@ const chainId = rocketh.chainId;
 const gas = 6721975; //7500000
 
 module.exports = async ({namedAccounts, initialRun}) => {
+  if(chainId == 1 || chainId == 4) { // || chainId == 18) { // TODO remove
+    return;
+  }
   const {
     deployer,
     mintingFeeCollector,
-    sandOwner,
+    assetAdmin,
   } = namedAccounts; 
 
   const sandContract = getDeployedContract('Sand');
@@ -47,10 +50,5 @@ module.exports = async ({namedAccounts, initialRun}) => {
   await tx({from: deployer, gas}, assetContract, "setSuperOperator", assetSignedAuctionContract.options.address, true);
   await tx({from: deployer, gas}, sandContract, "setSuperOperator", assetSignedAuctionContract.options.address, true);
 
-  let actualSandOwner = sandOwner;
-  const multiSig = getDeployedContract('MultiSig1'); // TODO use dynamic namedAccount
-  if(multiSig) {
-    actualSandOwner = multiSig.options.address;
-  }
-  await tx({from: deployer, gas}, assetContract, "changeAdmin", actualSandOwner);
+  await tx({from: deployer, gas}, assetContract, "changeAdmin", assetAdmin);
 }

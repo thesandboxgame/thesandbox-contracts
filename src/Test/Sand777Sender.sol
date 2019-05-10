@@ -1,9 +1,9 @@
 pragma solidity 0.5.2;
 
-import "../Interfaces/ERC777TokensRecipient.sol";
-import "../Interfaces/ERC777Token.sol";
-import "../Interfaces/ERC20.sol";
-import { ERC820Implementer } from "../Libraries/ERC820Implementer.sol";
+import "../../contracts_common/src/Interfaces/ERC777TokensRecipient.sol";
+import "../../contracts_common/src/Interfaces/ERC777Token.sol";
+import "../../contracts_common/src/Interfaces/ERC20.sol";
+import { ERC820Implementer } from "../../contracts_common/src/Base/ERC820Implementer.sol";
 
 contract Sand777Sender is ERC777TokensRecipient, ERC820Implementer {
 

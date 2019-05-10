@@ -1,6 +1,6 @@
 pragma solidity 0.5.2;
 
-import { ProxyImplementation } from "../../Libraries/ProxyImplementation.sol";
+import { ProxyImplementation } from "../../../contracts_common/src/BaseWithStorage/ProxyImplementation.sol";
 
 // from https://github.com/ricmoo/ethers-airdrop/blob/master/AirDropToken.sol
 // https://blog.ricmoo.com/merkle-air-drops-e6406945584d

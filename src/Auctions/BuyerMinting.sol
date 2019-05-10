@@ -1,10 +1,10 @@
 pragma solidity 0.5.2;
 
-import "../Libraries/SigUtil.sol";
-import "../Libraries/PriceUtil.sol";
+import "../../../contracts_common/src/Libraries/SigUtil.sol";
+import "../../../contracts_common/src/Libraries/PriceUtil.sol";
 import "../Sand.sol";
 import "../Asset.sol";
-import "../Interfaces/ERC20.sol";
+import "../../../contracts_common/src/Interfaces/ERC20.sol";
 import "../TheSandbox712.sol";
 
 contract BuyerMinting is TheSandbox712{

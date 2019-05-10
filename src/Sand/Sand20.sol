@@ -4,7 +4,7 @@ import "./erc20/ERC20ApproveExtension.sol";
 import "./erc20/ERC20MetaTxExtension.sol";
 import "./erc777/ERC20BaseTokenWithERC777Events.sol";
 import "../TheSandbox712.sol";
-import { ProxyImplementation } from "../Libraries/ProxyImplementation.sol";
+import { ProxyImplementation } from "../../contracts_common/src/BaseWithStorage/ProxyImplementation.sol";
 
 contract Sand20 is ProxyImplementation, ERC20MetaTxExtension, ERC20ApproveExtension, TheSandbox712, ERC20BaseTokenWithERC777Events {
 

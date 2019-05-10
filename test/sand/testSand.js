@@ -28,6 +28,10 @@ const {
     failERC777Tests,
 } = require('../erc777_tests');
 
+const {
+  runSandTests
+} = require('../sand/sand_tests');
+
 
 const rocketh = require('rocketh');
 const accounts = rocketh.accounts;
@@ -167,3 +171,6 @@ runERC777Tests('SAND upgraded to ERC777', erc777UpgradedFrom20);
 runERC777Tests('non upgradeable Sand777', nonUpgradeableSand777);
 
 failERC777Tests('SAND upgraded to ERC777 and then downgraded to ERC20', upgradedTo777AndThenDowngradedTo20);
+
+runSandTests('upgradeable SAND with ERC777 events', upgradableSand);
+runSandTests('non-upgradeable SAND with ERC777 events', nonUpgradeableSand);

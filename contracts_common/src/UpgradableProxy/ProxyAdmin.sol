@@ -1,7 +1,7 @@
 pragma solidity 0.5.2;
 
 import "./AdminUpgradeabilityProxy.sol";
-import "../Libraries/ownership/Ownable.sol";
+import "../BaseWithStorage/Ownable.sol";
 
 contract ProxyAdmin is Ownable {
   

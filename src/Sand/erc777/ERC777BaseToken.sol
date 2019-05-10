@@ -1,11 +1,11 @@
 pragma solidity 0.5.2;
 
-import { ERC820Implementer } from "../../Libraries/ERC820Implementer.sol";
-import { ERC777Token } from "../../Interfaces/ERC777Token.sol";
-import { ERC777TokenEvents } from "../../Interfaces/ERC777TokenEvents.sol";
-import { ERC777TokensSender } from "../../Interfaces/ERC777TokensSender.sol";
-import { ERC777TokensRecipient } from "../../Interfaces/ERC777TokensRecipient.sol";
-import { ProxyImplementation } from "../../Libraries/ProxyImplementation.sol";
+import { ERC820Implementer } from "../../../contracts_common/src/Base/ERC820Implementer.sol";
+import { ERC777Token } from "../../../contracts_common/src/Interfaces/ERC777Token.sol";
+import { ERC777TokenEvents } from "../../../contracts_common/src/Interfaces/ERC777TokenEvents.sol";
+import { ERC777TokensSender } from "../../../contracts_common/src/Interfaces/ERC777TokensSender.sol";
+import { ERC777TokensRecipient } from "../../../contracts_common/src/Interfaces/ERC777TokensRecipient.sol";
+import { ProxyImplementation } from "../../../contracts_common/src/BaseWithStorage/ProxyImplementation.sol";
 import { ERC20BaseToken } from "../erc20/ERC20BaseToken.sol";
 
 contract ERC777BaseToken is ProxyImplementation, ERC20BaseToken, /*ERC777Token,*/ ERC777TokenEvents, ERC820Implementer {

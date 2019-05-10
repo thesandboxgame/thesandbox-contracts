@@ -73,8 +73,8 @@ function runERC721ExtractionTests(title, resetContract) {
         t.test('should burn one token balance', async () => {
             const tokenId = await mintAndReturnTokenId(contract, ipfsHashString, 100, creator);
             await tx(contract, 'extractERC721', {from: creator, gas}, creator, tokenId, ipfsHashString);
-            const balanceBurnt = await call(contract, 'balanceOf', {from: creator}, 0, tokenId);
-            assert.equal(balanceBurnt, 1);
+            const balanceLeft = await call(contract, 'balanceOf', {from: creator}, creator, tokenId);
+            assert.equal(balanceLeft, 99);
         });
     
         t.test('should be owner, extractor', async () => {
@@ -91,6 +91,8 @@ function runERC721ExtractionTests(title, resetContract) {
             const receipt = await tx(contract, 'extractERC721', {from: creator, gas}, creator, tokenId, ipfsHashString);
             const extractionEvent = await getEventsFromReceipt(contract, ExtractionEvent, receipt);
             const newTokenId = extractionEvent[0].returnValues._toId;
+
+            // console.log(newTokenId)
 
             const extractedIpfsHash = await call(contract, 'tokenURI', null, newTokenId);
             assert.equal(extractedIpfsHash, ipfsHashString);

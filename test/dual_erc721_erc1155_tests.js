@@ -12,6 +12,7 @@ const {
     call,
     expectThrow,
     emptyBytes,
+    deployContract,
 } = require('./utils');
 
 // const {
@@ -29,7 +30,7 @@ const user1 = accounts[1];
 const operator = accounts[2];
 
 function runDualERC1155ERC721tests(title, resetContract, mintDual) {
-    tap.test(title, async (t)=> {
+    tap.test(title + " as dual erc1155/erc721", async (t)=> {
         let contract;
         let assetsId;
         t.beforeEach(async () => {
@@ -58,6 +59,73 @@ function runDualERC1155ERC721tests(title, resetContract, mintDual) {
 
             t.test('transfering one MFT via ERC721 transfer should fails', async () => {
                 await expectThrow(tx(contract, 'transferFrom', {from: creator, gas}, creator, user1, assetsId[0]));
+            });
+
+            t.test('using erc721 transferFrom for NFT via ERC721 transfer on a ERC721 token receiver contract should work', async () => {
+                const receiverContract = await deployContract(creator, 'TestERC721TokenReceiver', contract.options.address, true, true);
+                const receiverAddress = receiverContract.options.address;
+                await tx(contract, 'transferFrom', {from: creator, gas}, creator, receiverAddress, assetsId[1]);
+                const newOwner = await call(contract, 'ownerOf', null, assetsId[1]);
+                assert.equal(newOwner, receiverAddress);
+            });
+
+            t.test('using erc721 transferFrom for NFT via ERC721 transfer on a rejecting ERC721 token receiver contract should work', async () => {
+                const receiverContract = await deployContract(creator, 'TestERC721TokenReceiver', contract.options.address, false, true);
+                const receiverAddress = receiverContract.options.address;
+                await tx(contract, 'transferFrom', {from: creator, gas}, creator, receiverAddress, assetsId[1]);
+                const newOwner = await call(contract, 'ownerOf', null, assetsId[1]);
+                assert.equal(newOwner, receiverAddress);
+            });
+
+            t.test('using erc721 safeTransferFrom for NFT via ERC721 transfer on a ERC721 token receiver contract should work', async () => {
+                const receiverContract = await deployContract(creator, 'TestERC721TokenReceiver', contract.options.address, true, true);
+                const receiverAddress = receiverContract.options.address;
+                await tx(contract, 'safeTransferFrom', {from: creator, gas}, creator, receiverAddress, assetsId[1]);
+                const newOwner = await call(contract, 'ownerOf', null, assetsId[1]);
+                assert.equal(newOwner, receiverAddress);
+            });
+
+            t.test('using erc721 safeTransferFrom for NFT via ERC721 transfer on a rejecting ERC721 token receiver contract should fails', async () => {
+                const receiverContract = await deployContract(creator, 'TestERC721TokenReceiver', contract.options.address, false, true);
+                const receiverAddress = receiverContract.options.address;
+                await expectThrow(tx(contract, 'safeTransferFrom', {from: creator, gas}, creator, receiverAddress, assetsId[1]));
+            });
+
+            t.test('transfering one NFT via ERC721 transferFrom on a dual ERC721/ERC1155 token receiver contract should work', async () => {
+                const receiverContract = await deployContract(creator, 'TestERC1155ERC721TokenReceiver', contract.options.address, true, true, true, true, true);
+                const receiverAddress = receiverContract.options.address;
+                await tx(contract, 'transferFrom', {from: creator, gas}, creator, receiverAddress, assetsId[1]);
+                const newOwner = await call(contract, 'ownerOf', null, assetsId[1]);
+                assert.equal(newOwner, receiverAddress);
+            });
+
+            // TODO replace with other tests for expectERC1155()
+            // t.test('transfering one NFT via ERC721 transferFrom on a dual ERC721/ERC1155 token receiver that return incorrect value for rejection should work', async () => {
+            //     const receiverContract = await deployContract(creator, 'TestERC1155ERC721TokenReceiver', contract.options.address, false, false, true, true, true);
+            //     const receiverAddress = receiverContract.options.address;
+            //     await tx(contract, 'transferFrom', {from: creator, gas}, creator, receiverAddress, assetsId[1]);
+            //     const newOwner = await call(contract, 'ownerOf', null, assetsId[1]);
+            //     assert.equal(newOwner, receiverAddress);
+            // });
+
+            // t.test('transfering one NFT via ERC721 transferFrom on a dual ERC721/ERC1155 token receiver that throw should work', async () => {
+            //     const receiverContract = await deployContract(creator, 'TestERC1155ERC721TokenReceiver', contract.options.address, false, false, true, true, false);
+            //     const receiverAddress = receiverContract.options.address;
+            //     await tx(contract, 'transferFrom', {from: creator, gas}, creator, receiverAddress, assetsId[1]);
+            //     const newOwner = await call(contract, 'ownerOf', null, assetsId[1]);
+            //     assert.equal(newOwner, receiverAddress);
+            // });
+
+            t.test('transfering one NFT via ERC721 transferFrom on a dual rejecting ERC721/ERC1155 token receiver contract should fails', async () => {
+                const receiverContract = await deployContract(creator, 'TestERC1155ERC721TokenReceiver', contract.options.address, false, true, true, true, true);
+                const receiverAddress = receiverContract.options.address;
+                await expectThrow(tx(contract, 'transferFrom', {from: creator, gas}, creator, receiverAddress, assetsId[1]));
+            });
+
+            t.test('transfering one NFT via ERC721 safeTransferFrom on a dual rejecting ERC721/ERC1155 token receiver contract should fails', async () => {
+                const receiverContract = await deployContract(creator, 'TestERC1155ERC721TokenReceiver', contract.options.address, false, true, true, true, true);
+                const receiverAddress = receiverContract.options.address;
+                await expectThrow(tx(contract, 'safeTransferFrom', {from: creator, gas}, creator, receiverAddress, assetsId[1]));
             });
         });
 

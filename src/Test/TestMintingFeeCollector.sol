@@ -27,9 +27,9 @@ contract TestMintingFeeCollector is MintingFeeCollector {
         stakes[tokenId] = fee;
     }
 
-    function setFeeCollector(address newCollector, uint256 newFee) external {
+    function setFeeCollection(address newCollector, uint256 newFee) external {
         require(msg.sender == owner);
-        from.setFeeCollector(newCollector, newFee);
+        from.setFeeCollection(newCollector, newFee);
     }
 
 }

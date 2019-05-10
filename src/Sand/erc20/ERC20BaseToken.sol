@@ -1,8 +1,8 @@
 pragma solidity 0.5.2;
 
-import { ERC20 } from "../../Interfaces/ERC20.sol";
-import { ERC20Events } from "../../Interfaces/ERC20Events.sol";
-import "../../Libraries/SafeMath.sol";
+import { ERC20 } from "../../../contracts_common/src/Interfaces/ERC20.sol";
+import { ERC20Events } from "../../../contracts_common/src/Interfaces/ERC20Events.sol";
+import "../../../contracts_common/src/Libraries/SafeMath.sol";
 
 contract ERC20BaseToken is ERC20Events /*is ERC20*/ {
     using SafeMath for uint256;
@@ -49,10 +49,11 @@ contract ERC20BaseToken is ERC20Events /*is ERC20*/ {
     }
 
     function transferFrom(address _from, address _to, uint256 _amount) public returns (bool success) {
-        if(!mSuperOperators[msg.sender] && msg.sender != _from) {
-            require(mAllowed[_from][msg.sender] >= _amount, "Not enough funds allowed");
-            if(mAllowed[_from][msg.sender] != (2**256)-1) { // save gas when allowance is maximal by not reducing it (see https://github.com/ethereum/EIPs/issues/717)
-                mAllowed[_from][msg.sender] = mAllowed[_from][msg.sender].sub(_amount);
+        if(msg.sender != _from && !mSuperOperators[msg.sender]) {
+            uint256 allowance = mAllowed[_from][msg.sender];
+            if(allowance != (2**256)-1) { // save gas when allowance is maximal by not reducing it (see https://github.com/ethereum/EIPs/issues/717)
+                require(allowance >= _amount, "Not enough funds allowed");
+                mAllowed[_from][msg.sender] = allowance.sub(_amount);
             }
         }
         _transfer(_from, _to, _amount);
@@ -103,7 +104,7 @@ contract ERC20BaseToken is ERC20Events /*is ERC20*/ {
     // extra functionalities //////////////////////////////////////////////////////////////////////////////
 
     function _mint(address _to, uint256 _amount) internal {
-        require(_to != address(0), "Cannot send to 0x0");
+        require(_to != address(0), "Cannot mint to 0x0");
         mTotalSupply = mTotalSupply.add(_amount);
         mBalances[_to] = mBalances[_to].add(_amount);
         emit Transfer(address(0), _to, _amount);

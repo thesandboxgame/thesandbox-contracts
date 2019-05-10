@@ -3,22 +3,24 @@ const rocketh = require('rocketh');
 const {
   tx,
   getDeployedContract,
+  call,
 } = require('rocketh-web3')(rocketh, Web3); 
 
 const gas = 6500000;
 
-module.exports = async ({namedAccounts}) => {
+module.exports = async ({namedAccounts, initialRun}) => {
   const {
     deployer,
-    sandOwner,
+    sandAdmin,
   } = namedAccounts; 
 
-  let actualSandOwner = sandOwner;
-  const multiSig = getDeployedContract('MultiSig1'); // TODO use dynamic namedAccount
-  if(multiSig) {
-    actualSandOwner = multiSig.options.address;
-  }
-
   const sandContract = getDeployedContract('Sand');
-  await tx({from: deployer, gas}, sandContract, "changeAdmin", actualSandOwner);
+  const currentAdmin = await call(sandContract, "admin");
+  if(currentAdmin.toLowerCase() != sandAdmin.toLowerCase()) {
+    if(initialRun) {
+      console.log('setting sand admin', currentAdmin, sandAdmin);
+    }
+    await tx({from: deployer, gas}, sandContract, "changeAdmin", sandAdmin);
+  }
+  
 }

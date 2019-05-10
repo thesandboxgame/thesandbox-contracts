@@ -1,6 +1,6 @@
 pragma solidity 0.5.2;
 
-import "../Interfaces/ERC20.sol";
+import "../../contracts_common/src/Interfaces/ERC20.sol";
 
 contract ERC20Fund {
 

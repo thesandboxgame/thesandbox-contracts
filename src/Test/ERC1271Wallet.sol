@@ -1,8 +1,8 @@
 pragma solidity 0.5.2;
 
-import "../Interfaces/ERC1271.sol";
-import "../Interfaces/ERC1271Constants.sol";
-import "../Libraries/SigUtil.sol";
+import "../../contracts_common/src/Interfaces/ERC1271.sol";
+import "../../contracts_common/src/Interfaces/ERC1271Constants.sol";
+import "../../contracts_common/src/Libraries/SigUtil.sol";
 
 contract ERC1271Wallet is ERC1271, ERC1271Constants{
 

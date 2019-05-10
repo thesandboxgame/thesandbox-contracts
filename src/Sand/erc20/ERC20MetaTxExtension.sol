@@ -1,10 +1,10 @@
 pragma solidity 0.5.2;
 
-import "../../Libraries/BytesUtil.sol";
-import "../../Libraries/SigUtil.sol";
-import "../../Libraries/SafeMath.sol";
-import "../../Interfaces/ERC1271.sol";
-import "../../Interfaces/ERC1271Constants.sol";
+import "../../../contracts_common/src/Libraries/BytesUtil.sol";
+import "../../../contracts_common/src/Libraries/SigUtil.sol";
+import "../../../contracts_common/src/Libraries/SafeMath.sol";
+import "../../../contracts_common/src/Interfaces/ERC1271.sol";
+import "../../../contracts_common/src/Interfaces/ERC1271Constants.sol";
 
 contract ERC20MetaTxExtension is ERC1271Constants{
     using SafeMath for uint256;
@@ -13,7 +13,7 @@ contract ERC20MetaTxExtension is ERC1271Constants{
     mapping(address => uint256) nonces;
 
     uint256 constant GAS_LIMIT_OFFSET = 112000;
-    uint256 constant MIN_GAS = 23000 + 17500; // ~ 12500 (transfer with non-zero receiver balance) + ~ 4000 (Sent event)
+    uint256 constant MIN_GAS = 23000 + 17500; // ~ 13000 (transfer with non-zero receiver balance) + ~ 4500 (Sent event)
 
     event MetaTx(address indexed from, uint256 indexed nonce, bool success, bytes returnData);
 

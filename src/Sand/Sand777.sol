@@ -3,7 +3,7 @@ pragma solidity 0.5.2;
 import "./erc20/ERC20ApproveExtension.sol";
 import "./erc777/ERC777BaseToken.sol";
 import "../TheSandbox712.sol";
-import { ProxyImplementation } from "../Libraries/ProxyImplementation.sol";
+import { ProxyImplementation } from "../../contracts_common/src/BaseWithStorage/ProxyImplementation.sol";
 import "./erc20/ERC20MetaTxExtension.sol";
 import "./erc777/ERC777MetaTxExtension.sol";
 

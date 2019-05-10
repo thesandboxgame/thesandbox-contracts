@@ -170,8 +170,8 @@ function runSignedAuctionsTests(title, resetContracts) {
             buyAmount = 1;
             token = '0x0000000000000000000000000000000000000000';
             ids = [
-                await mintAndReturnTokenId(contracts.Asset, ipfsHashString, 100, creator),
-                await mintAndReturnTokenId(contracts.Asset, ipfsHashString, 200, creator)
+                await mintAndReturnTokenId(contracts.Asset, ipfsHashString, 100, creator, 1),
+                await mintAndReturnTokenId(contracts.Asset, ipfsHashString, 200, creator, 2)
             ];
             offerId = new BN(crypto.randomBytes(32), 16).toString(10);
             startedAt = Math.floor(Date.now() / 1000);

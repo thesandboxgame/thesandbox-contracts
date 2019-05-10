@@ -1,7 +1,7 @@
 pragma solidity 0.5.2;
 
 import "./erc777/ERC20BaseTokenWithERC777Events.sol";
-import { ProxyImplementation } from "../Libraries/ProxyImplementation.sol";
+import { ProxyImplementation } from "../../contracts_common/src/BaseWithStorage/ProxyImplementation.sol";
 
 contract Sand20Basic is ProxyImplementation, ERC20BaseTokenWithERC777Events {
 

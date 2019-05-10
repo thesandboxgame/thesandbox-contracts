@@ -1,9 +1,9 @@
 pragma solidity 0.5.2;
 
-import "../../Libraries/BytesUtil.sol";
-import "../../Libraries/SigUtil.sol";
-import "../../Interfaces/ERC1271.sol";
-import "../../Interfaces/ERC1271Constants.sol";
+import "../../../contracts_common/src/Libraries/BytesUtil.sol";
+import "../../../contracts_common/src/Libraries/SigUtil.sol";
+import "../../../contracts_common/src/Interfaces/ERC1271.sol";
+import "../../../contracts_common/src/Interfaces/ERC1271Constants.sol";
 
 contract ERC20ApproveExtension is ERC1271Constants{
 
