@@ -1,4 +1,4 @@
-WIP contracts for [the Sandbox](https://sandbox.game)
+WIP contracts for [The Sandbox](https://sandbox.game)
 
 SETUP :
 
