@@ -10,10 +10,13 @@ Learn more:
 - Telegram: https://t.me/sandboxgame
 - Medium: https://medium.com/sandbox-game
 
-We’re adopting the best standards to reach to players who are not familiar with Blockchain and Web3 technologies, simplifying the UX and on-boarding 
+
 
 Blockchain Features
 ==================================
+
+We’re adopting the best standards to reach to players who are not familiar with Blockchain and Web3 technologies, simplifying the UX and on-boarding 
+
 - Dual token structure smart-contract: ERC-721/ERC-1155
 - Escrowless Auctions
 - Meta-Transactions
