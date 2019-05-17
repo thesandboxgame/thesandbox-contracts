@@ -1,7 +1,7 @@
 Sand, an EIP-20 token implementation taht support meta transactions natively
 ===============================================================
 
-See: [src/Sand.sol](src/Sand.sol)
+See: [src/Sand.sol](../src/Sand.sol)
 
 Sand smart contract is the ERC-20 token that will be used for
 - Trading Assets among players

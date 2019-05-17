@@ -3,7 +3,7 @@ Asset, a dual ERC1155 / ERC721 token for user generated content
 
 ASSET is a smart contract token implementation of both [EIP-1155](https://eips.ethereum.org/EIPS/eip-1155) (for limited editions tokens) and [EIP-721](https://eips.ethereum.org/EIPS/eip-712) (for non fungible, unique tokens)
 
-See [src/Asset.sol](src/Asset.sol)
+See [src/Asset.sol](../src/Asset.sol)
 
 Each token represents the creations of our players. It is a permission-less implementation of EIP-1155 and EIP-721 where every user can mint their own token represented via metadata.
 

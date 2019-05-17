@@ -1,7 +1,7 @@
 Escrow-less Auctions
 ========================
 
-See [src/Auctions/AssedSignedAuction.sol](src/Auctions/AssedSignedAuction.sol)
+See [src/Auctions/AssedSignedAuction.sol](../src/Auctions/AssedSignedAuction.sol)
 
 While we offer a gaming experience to token owners, we also want them to be able to trade their possession as easily as possible. We are thus building a marketplace that will display all the Assets currently on sale.
 
