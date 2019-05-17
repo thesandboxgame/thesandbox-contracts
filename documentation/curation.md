@@ -1,3 +1,6 @@
+Asset Curation
+=================
+
 As mentioned in the Asset Smart contract document, we implement content curation as a “layer 2” solution. The goal being to promote quality content and avoid obscene, copies or other unacceptable content on our platform. 
 
 There are 8 components

@@ -1,10 +1,15 @@
-ASSET is a smart contract token implementation of both EIP-1155 (for limited editions tokens) and EIP-721 (for non fungible, unique tokens)
+Asset, a dual ERC1155 / ERC721 token for user generated content
+===============================================================
+
+ASSET is a smart contract token implementation of both [EIP-1155](https://eips.ethereum.org/EIPS/eip-1155) (for limited editions tokens) and [EIP-721](https://eips.ethereum.org/EIPS/eip-712) (for non fungible, unique tokens)
+
+See [src/Asset.sol](src/Asset.sol)
 
 Each token represents the creations of our players. It is a permission-less implementation of EIP-1155 and EIP-721 where every user can mint their own token represented via metadata.
 
 It implements both EIP-1155 and EIP-721 so players’ creation lives in the same id space and can be treated equivalently by wallets or marketplaces that support both EIP
 
-Like SAND it can be made upgradeable so we can introduce new features or potentially new standard.
+Like [Sand](Sand.md) it can be made upgradeable so we can introduce new features or potentially new standard.
 
 Since we are dealing with User Generated Content, we can expect all sorts of content to be minted on our Asset smart contract. We will have thus to filter them out.
 

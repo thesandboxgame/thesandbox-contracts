@@ -1,3 +1,8 @@
+Escrow-less Auctions
+========================
+
+See [src/Auctions/AssedSignedAuction.sol](src/Auctions/AssedSignedAuction.sol)
+
 While we offer a gaming experience to token owners, we also want them to be able to trade their possession as easily as possible. We are thus building a marketplace that will display all the Assets currently on sale.
 
 In order to avoid unnecessary transaction on the blockchain we offer the possibility for sellers to post their sale offers through off-chain message. Our marketplace take care of advertising it so that potential buyers can buy these offer through a single transaction.
