@@ -1,4 +1,4 @@
-Sand, an EIP-20 token implementation taht support meta transactions natively
+Sand, an ERC-20 token implementation that support meta transactions natively
 ===============================================================
 
 See: [src/Sand.sol](../src/Sand.sol)
