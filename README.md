@@ -1,4 +1,4 @@
-Smart-Contracts for [The Sandbox](https://sandbox.game) decentralized gaming platform
+Smart-Contracts for [The Sandbox](https://sandbox.game)
 ==================================
 
 The Sandbox is a user-generated content (UGC) gaming platform that will empower creators through digital ownership and monetization of 3D voxel creations made and shared by users around the world.
@@ -11,6 +11,9 @@ Learn more:
 
 
 -----------
+
+Get Started Instructions
+==================================
 
 SETUP :
 
