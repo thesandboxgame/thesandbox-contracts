@@ -17,7 +17,7 @@ Blockchain Features
 
 We’re adopting the best standards to reach to players who are not familiar with Blockchain and Web3 technologies, simplifying the UX and on-boarding 
 
-- Dual token structure smart-contract: ERC-721/ERC-1155
+- Dual token structure smart-contract: [ERC-721](https://github.com/ethereum/eips/issues/721)/[ERC-1155](https://github.com/ethereum/EIPs/issues/1155)
 - Escrowless Auctions
 - Meta-Transactions
 - Upgradable ERC-20 smart-contract
