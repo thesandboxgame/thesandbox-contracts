@@ -1,4 +1,4 @@
-pragma solidity 0.5.2;
+pragma solidity ^0.5.2;
 
 import "./erc20/ERC20ApproveExtension.sol";
 import "./erc20/ERC20MetaTxExtension.sol";
@@ -14,7 +14,9 @@ contract Sand20 is ProxyImplementation, ERC20MetaTxExtension, ERC20ApproveExtens
     function initSand(address _admin, address _beneficiary) public phase('SAND_20') {
         init712();
         admin = _admin;
-        if(mTotalSupply == 0 ) { _mint(_beneficiary, 3000000000000000000000000000); }
+        if(mTotalSupply == 0 ) {
+            _mint(_beneficiary, 3000000000000000000000000000);
+        }
     }
 
     function name() public view returns (string memory) { return "SAND"; }

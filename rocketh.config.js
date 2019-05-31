@@ -9,7 +9,7 @@ module.exports = {
         }
     },
     namedAccounts : {
-        deployer: 0, // when a number specify fro default the index in accounts
+        deployer: 0, // deploy contracts and make sure they are set up correctly
         metaTransactionFundOwner: 0, // TODO
         metaTransactionExecutor: 0,  // TODO
         mintingFeeCollector: "sandAdmin", // will receiver the fee from Asset minting

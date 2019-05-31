@@ -1,4 +1,4 @@
-pragma solidity 0.5.2;
+pragma solidity ^0.5.2;
 
 import { ERC20 } from "../../../contracts_common/src/Interfaces/ERC20.sol";
 import { ERC20Events } from "../../../contracts_common/src/Interfaces/ERC20Events.sol";
@@ -6,7 +6,7 @@ import "../../../contracts_common/src/Libraries/SafeMath.sol";
 
 contract ERC20BaseToken is ERC20Events /*is ERC20*/ {
     using SafeMath for uint256;
-    
+
     ////////////////// Super Operators ///////////////////////////////////////////////////////
     // Allowing extension without redeploy
     mapping(address => bool) internal mSuperOperators;
@@ -20,7 +20,7 @@ contract ERC20BaseToken is ERC20Events /*is ERC20*/ {
     event SuperOperator(address superOperator, bool enabled);
     function setSuperOperator(address _superOperator, bool _enabled) external {
         require(msg.sender == admin, "only admin is allowed to add super operators");
-        mSuperOperators[_superOperator] = _enabled; 
+        mSuperOperators[_superOperator] = _enabled;
         emit SuperOperator(_superOperator, _enabled);
     }
     function isSuperOperator(address who) public view returns(bool) {
@@ -117,7 +117,7 @@ contract ERC20BaseToken is ERC20Events /*is ERC20*/ {
                 mAllowed[_from][msg.sender] = mAllowed[_from][msg.sender].sub(_amount);
             }
         }
-        
+
         require(mBalances[_from] >= _amount, "Not enough funds");
         mBalances[_from] = mBalances[_from].sub(_amount);
         mTotalSupply = mTotalSupply.sub(_amount);

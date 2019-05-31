@@ -1,4 +1,4 @@
-pragma solidity 0.5.2;
+pragma solidity ^0.5.2;
 
 import "../../../contracts_common/src/Libraries/BytesUtil.sol";
 import "../../../contracts_common/src/Libraries/SigUtil.sol";
@@ -9,7 +9,8 @@ import "../../../contracts_common/src/Interfaces/ERC1271Constants.sol";
 contract ERC20MetaTxExtension is ERC1271Constants{
     using SafeMath for uint256;
 
-    bytes32 constant ERC20METATRANSACTION_TYPEHASH = keccak256("ERC20MetaTransaction(address from,address to,uint256 amount,bytes data,uint256 nonce,uint256 gasPrice,uint256 txGas,uint256 gasLimit,uint256 tokenGasPrice,address relayer)");
+    bytes32 constant ERC20METATRANSACTION_TYPEHASH =
+        keccak256("ERC20MetaTransaction(address from,address to,uint256 amount,bytes data,uint256 nonce,uint256 gasPrice,uint256 txGas,uint256 gasLimit,uint256 tokenGasPrice,address relayer)");
     mapping(address => uint256) nonces;
 
     uint256 constant GAS_LIMIT_OFFSET = 112000;
@@ -32,7 +33,7 @@ contract ERC20MetaTxExtension is ERC1271Constants{
 
     function ensureCorrectSigner(
         address _from,
-        address _to,  
+        address _to,
         uint256 _amount,
         bytes memory _data,
         uint256[4] memory params, // _nonce, _gasPrice, _txGas, _tokenGasPrice
@@ -77,7 +78,7 @@ contract ERC20MetaTxExtension is ERC1271Constants{
     ) internal view returns (bytes32) {
         return keccak256(abi.encodePacked(
             address(this),
-            typeHash, 
+            typeHash,
              _from,
             _to,
             _amount,
@@ -93,7 +94,7 @@ contract ERC20MetaTxExtension is ERC1271Constants{
 
     function ensureCorrectSignerViaBasicSignature(
         address _from,
-        address _to,  
+        address _to,
         uint256 _amount,
         bytes memory _data,
         uint256[4] memory params, // _nonce, _gasPrice, _txGas, _tokenGasPrice
@@ -113,7 +114,7 @@ contract ERC20MetaTxExtension is ERC1271Constants{
 
     function executeERC20MetaTx(
         address _from,
-        address _to,  
+        address _to,
         uint256 _amount,
         bytes calldata _data,
         uint256[4] calldata params, // _nonce, _gasPrice, _txGas, _tokenGasPrice
@@ -130,7 +131,7 @@ contract ERC20MetaTxExtension is ERC1271Constants{
 
     function executeERC20MetaTxViaBasicSignature(
         address _from,
-        address _to,  
+        address _to,
         uint256 _amount,
         bytes calldata _data,
         uint256[4] calldata params, // _nonce, _gasPrice, _txGas, _tokenGasPrice
@@ -170,28 +171,27 @@ contract ERC20MetaTxExtension is ERC1271Constants{
                 if(before != 2**256-1) {
                     allowanceChanged = true;
                     _approveForWithoutEvent(_from, _to, _amount);
-                }   
+                }
             }
             (success, returnData) = _to.call.gas(params[2])(_data);
-            require(gasleft() >= params[2].div(63), "not enough gas left");
-            
+            require(gasleft() > params[2].div(63), "not enough gas left");
+
             if(allowanceChanged) {
                 _approveForWithoutEvent(_from, _to, before);
             }
         }
 
         emit MetaTx(_from, params[0], success, returnData);
-        
+
         if(params[3] > 0) {
             uint256 gasConsumed = (initialGas.add(MIN_GAS)).sub(gasleft());
             uint256 maxGasCharge = GAS_LIMIT_OFFSET.add(params[2]);
             if(gasConsumed > maxGasCharge) {
-                gasConsumed = maxGasCharge; 
+                gasConsumed = maxGasCharge;
                 // idealy we would like to charge only max(GAS_LIMIT_OFFSET, gas consumed outside the inner call) + gas consumed as part of the inner call
             }
             _transfer(_from, _tokenReceiver, gasConsumed.mul(params[3]));
         }
-        
         return (success, returnData);
     }
 

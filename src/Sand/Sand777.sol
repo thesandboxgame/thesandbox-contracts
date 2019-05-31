@@ -1,4 +1,4 @@
-pragma solidity 0.5.2;
+pragma solidity ^0.5.2;
 
 import "./erc20/ERC20ApproveExtension.sol";
 import "./erc777/ERC777BaseToken.sol";

@@ -366,7 +366,7 @@ function runMetaTxExtensionTests(title, resetContract, use777) {
     t.test('executing with just NOT enough gas should result in the relayer\'s tx failing', async() => {
       const GasDrain = await deployContract(creator, 'GasDrain');
       const txGas = 5000000;
-      const gasProvided = Math.floor((txGas * 64) / 63) + 112000 + 58150 -50; // 58151 works sporadically // hence the -50
+      const gasProvided = Math.floor((txGas * 64) / 63) + 112000 + 56770; // approximatively
       const gasLimit = txGas+112000;
       // console.log('gasProvided', gasProvided);
 
@@ -383,9 +383,9 @@ function runMetaTxExtensionTests(title, resetContract, use777) {
     // t.only('executing with just enough gas should result in the meta tx success', async() => {
     //   const GasDrain = await deployContract(creator, 'GasDrain');
     //   const txGas = 5000000;
-    //   const gasProvided = Math.floor((txGas * 64) / 63) + 112000 + 58151 + 50; // 58150 fails sporadically // hence the +50
+    //   const gasProvided = Math.floor((txGas * 64) / 63) + 112000 + 56800;
     //   const gasLimit = txGas+112000;
-    //   // console.log('gasProvided', gasProvided);
+    //   console.log('gasProvided', gasProvided);
 
     //   await transfer(contract, executor, 1, {from: sandOwner, gas}); // TO ENSURE NO 20000 storage cost
 

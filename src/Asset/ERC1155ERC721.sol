@@ -1,6 +1,7 @@
-pragma solidity 0.5.2;
+pragma solidity ^0.5.2;
 
 import "../../contracts_common/src/Interfaces/ERC1155.sol";
+import "../../contracts_common/src/Interfaces/ERC1155TokenReceiver.sol";
 
 import "../../contracts_common/src/Libraries/AddressUtils.sol";
 import "../../contracts_common/src/Libraries/ObjectLib32.sol";
@@ -10,7 +11,6 @@ import "../../contracts_common/src/Libraries/BytesUtil.sol";
 import "../../contracts_common/src/Interfaces/ERC721.sol";
 import "../../contracts_common/src/Interfaces/ERC721TokenReceiver.sol";
 import "../../contracts_common/src/Interfaces/ERC20.sol";
-import "../Sand.sol";
 
 import "./Interfaces/MintingFeeCollector.sol";
 
@@ -47,10 +47,10 @@ contract ERC1155ERC721 is ProxyImplementation, ERC1155, ERC721 {
     ///////////////////////////////////////////////////////////////////////////////////////////////
 
     // CONSTANTS //////////////////////////////////////////////////////////////////////////////////
-    bytes4 constant private ERC1155_EXPECT = 0xbb74d243;
-    bytes4 constant private ERC1155_RECEIVED = 0xf23a6e61; // TODO use latest spec // better yet : generate it
-    bytes4 constant private ERC1155_BATCH_RECEIVED = 0xbc197c81; // TODO use latest spec // better yet : generate it
-    bytes4 constant private ERC721_RECEIVED = 0x150b7a02; // TODO use latest spec // better yet : generate it
+    bytes4 constant private ERC1155_IS_RECEIVER = 0x0d912442;
+    bytes4 constant private ERC1155_RECEIVED = 0xf23a6e61;
+    bytes4 constant private ERC1155_BATCH_RECEIVED = 0xbc197c81;
+    bytes4 constant private ERC721_RECEIVED = 0x150b7a02;
     ///////////////////////////////////////////////////////////////////////////////////////////////
 
     event CreatorshipTransfer(address indexed original, address indexed from, address indexed to);
@@ -61,43 +61,38 @@ contract ERC1155ERC721 is ProxyImplementation, ERC1155, ERC721 {
     mapping(address => mapping(uint256 => uint256)) packedTokenBalance; // required for erc1155
     mapping(address => mapping(address => bool)) operatorsForAll; // required for erc721 and erc1155
     mapping(uint256 => address) erc721_operators; // required for erc721
-    mapping (uint256 => string) public erc721_metadataURIs; // required for erc721
-    mapping (uint256 => bytes32) public erc1155_metadataURIHashes; // required for extraction
-    mapping (uint256 => uint32) public supplies;
+    mapping(uint256 => string) public erc721_metadataURIs; // required for erc721
+    mapping(uint256 => bytes32) public erc1155_metadataURIHashes; // required for extraction
+    mapping(uint256 => uint32) public burnt;
 
     mapping(address => address) creatorship;
 
     uint256 public mintingFee;
+    ERC20 public feeToken;
     address feeCollector;
-    Sand _sandContract;
-
-    //mapping(uint256 => address) creators; // use only for when changing original creator // TODO
-
+    address metaTransactionContract;
     ///////////////////////////////////////////////////////////////////////////////////////////////
 
-    constructor(Sand sand, address _feeCollector, address _admin) public {
-        initERC1155ERC721(sand, _feeCollector, _admin);
+    constructor(address _metaTransactionContract, address _feeCollector, address _admin) public {
+        initERC1155ERC721(_metaTransactionContract, _feeCollector, _admin);
     }
 
-    function initERC1155ERC721(Sand sand, address _feeCollector, address _admin) public phase('ERC1155ERC721'){
-        _sandContract = sand;
+    function initERC1155ERC721(address _metaTransactionContract, address _feeCollector, address _admin) public phase('ERC1155ERC721'){
+        metaTransactionContract = _metaTransactionContract;
         feeCollector = _feeCollector;
         admin = _admin;
     }
 
-    function sandContract() internal view returns(Sand) {
-        return _sandContract;
-    }
-
-    function setFeeCollection(address _newFeeCollector, uint256 _newFee) external {
+    function setFeeCollection(address _newFeeCollector, ERC20 _newFeeToken, uint256 _newFee) external {
         require(msg.sender == feeCollector, "only feeCollector can update");
         feeCollector = _newFeeCollector;
         mintingFee = _newFee;
+        feeToken = _newFeeToken;
     }
 
     function mint(
         address _sender,
-        uint256 _sandAmount,
+        uint256 _fee,
         uint56 _subId,
         string calldata _uri,
         uint32 _supply,
@@ -105,22 +100,22 @@ contract ERC1155ERC721 is ProxyImplementation, ERC1155, ERC721 {
         bytes calldata _data
     ) external returns (uint256 tokenId) {
         require(_owner != address(0), "Invalid owner");
-        require(msg.sender == _sender || msg.sender == address(_sandContract), "sender != msg.sender && sandContract");
-        require(_sandAmount == mintingFee, "fee not matching");
-        if(_sandAmount > 0) {
-            _sandContract.transferFrom(_sender, feeCollector, _sandAmount);
+        require(msg.sender == _sender || msg.sender == metaTransactionContract || mSuperOperators[msg.sender], "sender not authorized");
+        require(_fee == mintingFee, "fee not matching");
+        if(_fee > 0) {
+            feeToken.transferFrom(_sender, feeCollector, _fee);
         }
         require(bytes(_uri).length > 0, "uri cannot be an empty string");
         tokenId = generateTokenId(_sender, _supply, _subId);
         _mint(_uri, _supply, _sender, _owner, tokenId, _data, false);
         if(feeCollector.isContract()) {
-            MintingFeeCollector(feeCollector).single_minted(tokenId, _sandAmount);
+            MintingFeeCollector(feeCollector).single_minted(tokenId, _fee);
         }
     }
 
     function generateTokenId(address _creator, uint256 _supply, uint56 _subId) internal returns (uint256) {
         require(_supply < 2**32, "supply >= 2**32");
-        return uint256(_creator) * 2**(256-160) + (_supply == 1 ? 0 :  1 * 2**(256-160-1) + _supply * 2**(256-160-8-32)) + _subId;
+        return uint256(_creator) * 2**(256-160) + (_supply == 1 ? 0 :  1 * 2**(256-160-1)) + _subId;
     }
 
     function _mint(
@@ -170,7 +165,7 @@ contract ERC1155ERC721 is ProxyImplementation, ERC1155, ERC721 {
 
     function mintMultiple(
         address _sender,
-        uint256 _sandAmount,
+        uint256 _fee,
         uint56 firstSubId,
         string calldata _uris,
         uint16[] calldata lengths,
@@ -179,11 +174,8 @@ contract ERC1155ERC721 is ProxyImplementation, ERC1155, ERC721 {
         bytes calldata _data
     ) external {
         require(_owner != address(0), "Invalid owner");
-        require(msg.sender == _sender || msg.sender == address(_sandContract), "sender != msg.sender && sandContract");
-        require(_sandAmount == mintingFee * _supplies.length, "fee not matching");
-        if(_sandAmount > 0) {
-            _sandContract.transferFrom(_sender, feeCollector, _sandAmount);
-        }
+        require(msg.sender == _sender || msg.sender == metaTransactionContract || mSuperOperators[msg.sender], "sender not authorized");
+        require(_fee == mintingFee * _supplies.length, "fee not matching");
         require(lengths.length == _supplies.length, "Inconsistent array length between lengths and supplies.");
         uint256[] memory tokenIds = generateTokenIds(_sender, _supplies, firstSubId, lengths.length);
         _mintBatchesWithNFTs(_sender, _uris, lengths, _supplies, 0, _owner, tokenIds);
@@ -192,6 +184,9 @@ contract ERC1155ERC721 is ProxyImplementation, ERC1155, ERC721 {
             _checkERC1155AndCallSafeBatchTransfer(_sender, address(0), _owner, tokenIds, _supplies, _data),
             "transfer rejected"
         );
+        if(_fee > 0) {
+            feeToken.transferFrom(_sender, feeCollector, _fee);
+        }
         if(feeCollector.isContract()) {
             MintingFeeCollector(feeCollector).multiple_minted(tokenIds, mintingFee);
         }
@@ -214,18 +209,9 @@ contract ERC1155ERC721 is ProxyImplementation, ERC1155, ERC721 {
         return tokenIds;
     }
 
-    function supplyOf(uint256 _tokenID) public returns (uint256) {
-        require(erc1155_metadataURIHashes[_tokenID & 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF0000000000FFFFFFFFFFFFFF] != 0); // solium-disable-line error-reason, max-len
-        if(supplies[_tokenID] > 0) {
-            return supplies[_tokenID];
-        } else {
-            return (_tokenID & 0x000000000000000000000000000000000000000000FFFFFFFF00000000000000) >> 56;
-        }
-    }
-
     function mintMultipleWithNFT(
         address _sender,
-        uint256 _sandAmount,
+        uint256 _fee,
         uint56 firstSubId,
         string calldata _uris,
         uint16[] calldata lengths,
@@ -235,11 +221,11 @@ contract ERC1155ERC721 is ProxyImplementation, ERC1155, ERC721 {
         bytes calldata _data
     ) external {
         require(_owner != address(0), "Invalid owner");
-        require(msg.sender == _sender || msg.sender == address(_sandContract), "sender != msg.sender && sandContract");
+        require(msg.sender == _sender || msg.sender == metaTransactionContract || mSuperOperators[msg.sender], "sender not authorized");
         require(lengths.length == _supplies.length + numNFTs, "Inconsistent array length between args lengths and supplies.");
-        require(_sandAmount == mintingFee * lengths.length, "fee not matching");
-        if(_sandAmount > 0) {
-            _sandContract.transferFrom(_sender, feeCollector, _sandAmount);
+        require(_fee == mintingFee * lengths.length, "fee not matching");
+        if(_fee > 0) {
+            feeToken.transferFrom(_sender, feeCollector, _fee);
         }
         uint256[] memory tokenIds = generateTokenIds(_sender, _supplies, firstSubId, lengths.length);
         _mintBatchesWithNFTs(_sender, _uris, lengths, _supplies, numNFTs, _owner, tokenIds);
@@ -279,8 +265,15 @@ contract ERC1155ERC721 is ProxyImplementation, ERC1155, ERC721 {
         uint256[] memory _tokenIds
     ) internal returns (uint32 readingPointer) {
         readingPointer = 0x20;
-        for (uint16 offset = 0; offset < uint16(_supplies.length); offset += 8) {
-            readingPointer = _mintBatch(stringBytes, readingPointer, offset, lengths, _supplies, _creator, _owner, _tokenIds);
+        uint16 offset = 0;
+        (, uint256 index) = (_tokenIds[0] & 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF0000000000FFFFFFFFFFFFFF).getTokenBinIndex();
+        uint16 batchSize = uint16(8 - index);
+        while(offset < uint16(_supplies.length)) {
+            readingPointer = _mintBatch(
+                stringBytes, readingPointer, offset, lengths, _supplies, _creator, _owner, _tokenIds, batchSize
+            );
+            offset += batchSize;
+            batchSize = 8;
         }
     }
 
@@ -304,7 +297,7 @@ contract ERC1155ERC721 is ProxyImplementation, ERC1155, ERC721 {
                 "id already used"
             );
             require(
-                owners[_tokenId & 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF0000000000FFFFFFFFFFFFFF] == address(0),
+                owners[_tokenId] == address(0),
                 "tokenId already used"
             );
             owners[_tokenId] = _owner;
@@ -314,7 +307,7 @@ contract ERC1155ERC721 is ProxyImplementation, ERC1155, ERC721 {
             assembly {
                 ptr := add(stringBytes, readingPointer)
             }
-            bytes memory tmp = BytesUtil.toBytes(ptr, lengths[offset + i]);
+            bytes memory tmp = BytesUtil.pointerToBytes(ptr, lengths[offset + i]);
             readingPointer += lengths[offset + i];
             erc721_metadataURIs[id] = string(tmp);
             emit TransferSingle(_creator, address(0), _owner, _tokenId, 1);
@@ -330,14 +323,10 @@ contract ERC1155ERC721 is ProxyImplementation, ERC1155, ERC721 {
         uint256[] memory _supplies,
         address _creator,
         address _owner,
-        uint256[] memory _tokenIds
+        uint256[] memory _tokenIds,
+        uint16 batchSize
     ) internal returns(uint32 newReadingPointer) {
-        uint16 batchSize = uint16(_supplies.length) - offset;
-        if(batchSize > 8) {
-            batchSize = 8;//ObjectLib32.TYPES_PER_UINT256;
-        }
-
-        uint256 firstId = _tokenIds[0] & 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF0000000000FFFFFFFFFFFFFF;
+        uint256 firstId = _tokenIds[offset] & 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF0000000000FFFFFFFFFFFFFF;
         (uint256 bin,) = firstId.getTokenBinIndex();
         (uint32 readingPointer, uint256 newBalance) = _packMintBatch(
             stringBytes,
@@ -371,6 +360,9 @@ contract ERC1155ERC721 is ProxyImplementation, ERC1155, ERC721 {
         uint256 firstId = _tokenIds[offset] & 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF0000000000FFFFFFFFFFFFFF;
         (,uint256 index) = firstId.getTokenBinIndex();
         for (uint256 i = 0; i < batchSize; i++) {
+            if(_supplies.length <= offset + i){
+                break;
+            }
             require(uint256(erc1155_metadataURIHashes[firstId + i]) == 0, "id already used");
             require(
                 owners[_tokenIds[offset+i] & 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF0000000000FFFFFFFFFFFFFF] == address(0),
@@ -382,7 +374,7 @@ contract ERC1155ERC721 is ProxyImplementation, ERC1155, ERC721 {
             assembly {
                 ptr := add(stringBytes, newReadingPointer)
             }
-            bytes memory tmp = BytesUtil.toBytes(ptr, lengths[j]);
+            bytes memory tmp = BytesUtil.pointerToBytes(ptr, lengths[j]);
             newReadingPointer += lengths[j];
             require(_supplies[j] > 1, "supply == 1 require use of withNFT");
             newBalance = newBalance.updateTokenBalance(index + i, _supplies[j], ObjectLib32.Operations.REPLACE);
@@ -393,7 +385,7 @@ contract ERC1155ERC721 is ProxyImplementation, ERC1155, ERC721 {
 
     function _transferFrom(address _from, address _to, uint256 _id, uint256 _value) internal {
         require(_to != address(0), "Invalid to address");
-        if(_from != msg.sender && msg.sender != address(_sandContract)) {
+        if(_from != msg.sender && msg.sender != metaTransactionContract) {
             require(mSuperOperators[msg.sender] || operatorsForAll[_from][msg.sender] || erc721_operators[_id] == msg.sender, "Operator not approved");
         }
 
@@ -416,7 +408,7 @@ contract ERC1155ERC721 is ProxyImplementation, ERC1155, ERC721 {
             );
         }
 
-        emit TransferSingle(msg.sender == address(_sandContract) ? _from : msg.sender, _from, _to, _id, _value);
+        emit TransferSingle(msg.sender == metaTransactionContract ? _from : msg.sender, _from, _to, _id, _value);
     }
 
     // function transferFrom(address _from, address _to, uint256 _id, uint256 _value) external {
@@ -425,7 +417,7 @@ contract ERC1155ERC721 is ProxyImplementation, ERC1155, ERC721 {
     function safeTransferFrom(address _from, address _to, uint256 _id, uint256 _value, bytes calldata _data) external {
         _transferFrom(_from, _to, _id, _value);
         require( // solium-disable-line error-reason
-            _checkERC1155AndCallSafeTransfer(msg.sender == address(_sandContract) ? _from : msg.sender, _from, _to, _id, _value, _data, false, false)
+            _checkERC1155AndCallSafeTransfer(msg.sender == metaTransactionContract ? _from : msg.sender, _from, _to, _id, _value, _data, false, false)
         );
     }
 
@@ -434,6 +426,7 @@ contract ERC1155ERC721 is ProxyImplementation, ERC1155, ERC721 {
     //     _batchTransferFrom(_from, _to, _ids, _values);
     // }
 
+    // NOTE: call data should be optimized to order _ids so packedBalance can be used efficiently
     function safeBatchTransferFrom(
         address _from,
         address _to,
@@ -443,15 +436,14 @@ contract ERC1155ERC721 is ProxyImplementation, ERC1155, ERC721 {
     ) external {
         _batchTransferFrom(_from, _to, _ids, _values);
         require( // solium-disable-line error-reason
-            _checkERC1155AndCallSafeBatchTransfer(msg.sender == address(_sandContract) ? _from : msg.sender, _from, _to, _ids, _values, _data)
+            _checkERC1155AndCallSafeBatchTransfer(msg.sender == metaTransactionContract ? _from : msg.sender, _from, _to, _ids, _values, _data)
         );
     }
 
-    // NOTE: call data should be optimized to order _ids so packedBalance can be used efficiently
     function _batchTransferFrom(address _from, address _to, uint256[] memory _ids, uint256[] memory _values) internal {
         require(_ids.length == _values.length, "Inconsistent array length between args");
         require(_to != address(0), "Invalid recipient");
-        bool authorized = mSuperOperators[msg.sender] || operatorsForAll[_from][msg.sender] || _from == msg.sender || msg.sender == address(_sandContract); // solium-disable-line max-len
+        bool authorized = mSuperOperators[msg.sender] || operatorsForAll[_from][msg.sender] || _from == msg.sender || msg.sender == metaTransactionContract; // solium-disable-line max-len
 
         uint256 bin;
         uint256 index;
@@ -505,7 +497,7 @@ contract ERC1155ERC721 is ProxyImplementation, ERC1155, ERC721 {
             packedTokenBalance[_to][bin] = balTo;
         }
 
-        emit TransferBatch(msg.sender == address(_sandContract) ? _from : msg.sender, _from, _to, _ids, _values);
+        emit TransferBatch(msg.sender == metaTransactionContract ? _from : msg.sender, _from, _to, _ids, _values);
     }
 
     function balanceOf(address _owner, uint256 _tokenId) public view returns (uint256) {
@@ -530,7 +522,7 @@ contract ERC1155ERC721 is ProxyImplementation, ERC1155, ERC721 {
     }
 
     function creatorOf(uint256 _tokenId) external view returns (address) {
-        uint256 id = _tokenId & 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF0000000000FFFFFFFFFFFFFF;
+        uint256 id = _tokenId & 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF00FFFFFFFFFFFFFFFFFFFFFF;
         require( // solium-disable-line error-reason
             owners[_tokenId] != address(0) || uint256(erc1155_metadataURIHashes[id]) != 0
         );
@@ -548,7 +540,7 @@ contract ERC1155ERC721 is ProxyImplementation, ERC1155, ERC721 {
     }
 
     function transferCreatorship(address _sender, address _original, address _to) external {
-        require(msg.sender == _sender || msg.sender == address(_sandContract) || mSuperOperators[msg.sender], "require meta approval");
+        require(msg.sender == _sender || msg.sender == metaTransactionContract || mSuperOperators[msg.sender], "require meta approval");
         require(_to != address(0)); // solium-disable-line error-reason
         address current = creatorship[_original];
         if(current == address(0)) {
@@ -567,7 +559,7 @@ contract ERC1155ERC721 is ProxyImplementation, ERC1155, ERC721 {
     // Operators /////////////////////////////////////////////////////////////////////////////////////
 
     function setApprovalForAllFor(address _sender, address _operator, bool _approved) external {
-        require(msg.sender == _sender || msg.sender == address(_sandContract) || mSuperOperators[msg.sender], "require meta approval");
+        require(msg.sender == _sender || msg.sender == metaTransactionContract || mSuperOperators[msg.sender], "require meta approval");
         _setApprovalForAll(_sender, _operator, _approved);
     }
     function setApprovalForAll(address _operator, bool _approved) external {
@@ -593,10 +585,10 @@ contract ERC1155ERC721 is ProxyImplementation, ERC1155, ERC721 {
         require(_owner != address(0)); // solium-disable-line error-reason
     }
 
-    // used for Meta Transaction (from _sandContract)
+    // used for Meta Transaction (from metaTransactionContract)
     function approveFor(address _sender, address _operator, uint256 _id) external {
         address owner = owners[_id];
-        require(msg.sender == _sender || msg.sender == address(_sandContract) || mSuperOperators[msg.sender] || operatorsForAll[_sender][msg.sender], "require operators"); // solium-disable-line max-len
+        require(msg.sender == _sender || msg.sender == metaTransactionContract || mSuperOperators[msg.sender] || operatorsForAll[_sender][msg.sender], "require operators"); // solium-disable-line max-len
         require(owner == _sender); // solium-disable-line error-reason
         erc721_operators[_id] = _operator;
         emit Approval(owner, _operator, _id);
@@ -616,12 +608,12 @@ contract ERC1155ERC721 is ProxyImplementation, ERC1155, ERC721 {
     function transferFrom(address _from, address _to, uint256 _id) external{
         require(_to != address(0)); // solium-disable-line error-reason
         require(owners[_id] == _from); // solium-disable-line error-reason
-        if(msg.sender != _from && msg.sender != address(_sandContract)) {
+        if(msg.sender != _from && msg.sender != metaTransactionContract) {
             require(operatorsForAll[_from][msg.sender] || erc721_operators[_id] == msg.sender || mSuperOperators[msg.sender], "Operator not approved");
         }
         _transferFrom(_from, _to, _id, 1);
         require( // solium-disable-line error-reason
-            _checkERC1155AndCallSafeTransfer(msg.sender == address(_sandContract) ? _from : msg.sender, _from, _to, _id, 1, "", true, false)
+            _checkERC1155AndCallSafeTransfer(msg.sender == metaTransactionContract ? _from : msg.sender, _from, _to, _id, 1, "", true, false)
         );
     }
     function safeTransferFrom(address _from, address _to, uint256 _id) external {
@@ -630,12 +622,12 @@ contract ERC1155ERC721 is ProxyImplementation, ERC1155, ERC721 {
     function safeTransferFrom(address _from, address _to, uint256 _id, bytes memory _data) public {
         require(_to != address(0)); // solium-disable-line error-reason
         require(owners[_id] == _from); // solium-disable-line error-reason
-        if(msg.sender != _from && msg.sender != address(_sandContract)) {
+        if(msg.sender != _from && msg.sender != metaTransactionContract) {
             require(operatorsForAll[_from][msg.sender] || erc721_operators[_id] == msg.sender || mSuperOperators[msg.sender], "Operator not approved");
         }
         _transferFrom(_from, _to, _id, 1);
         require( // solium-disable-line error-reason
-            _checkERC1155AndCallSafeTransfer(msg.sender == address(_sandContract) ? _from : msg.sender, _from, _to, _id, 1, _data, true, true)
+            _checkERC1155AndCallSafeTransfer(msg.sender == metaTransactionContract ? _from : msg.sender, _from, _to, _id, 1, _data, true, true)
         );
     }
     function name() external pure returns (string memory _name) {
@@ -653,8 +645,8 @@ contract ERC1155ERC721 is ProxyImplementation, ERC1155, ERC721 {
     function supportsInterface(bytes4 id)
     external
     view
-    returns (bool) { // ERC1155       // ERC721           // ERC721 metadata
-        return id == 0xd9b67a26 || id == 0x80ac58cd || id == 0x5b5e139f;
+    returns (bool) { //ERC165            // ERC1155       // ERC721           // ERC721 metadata
+        return id == 0x01ffc9a7 || id == 0xd9b67a26 || id == 0x80ac58cd || id == 0x5b5e139f;
     }
 
     ///////////////////////////////////////// INTERNAL //////////////////////////////////////////////
@@ -676,17 +668,17 @@ contract ERC1155ERC721 is ProxyImplementation, ERC1155, ERC721 {
             return true;
         }
         if(erc721) {
-            (bool success, bytes memory returnData) = _to.call.gas(5000)(abi.encodeWithSignature("expectERC1155()"));
+            (bool success, bytes memory returnData) = _to.call.gas(5000)(abi.encodeWithSignature("isERC1155TokenReceiver()"));
             bytes4 retval = 0x0;
             if(!success) {
-                assert(gasleft() > 79); // (5000 / 63) "not enough for expectERC1155()" // consume all gas, so caller can potentially know that there was not enough gas
+                assert(gasleft() > 79); // (5000 / 63) "not enough for isERC1155TokenReceiver()" // consume all gas, so caller can potentially know that there was not enough gas
             } else if(returnData.length > 0) {
                 // solium-disable-next-line security/no-inline-assembly
                 assembly {
                     retval := mload(add(returnData, 32))
                 }
             }
-            if(retval != ERC1155_EXPECT) {
+            if(retval != ERC1155_IS_RECEIVER) {
                 if(erc721Safe) {
                     return _checkERC721AndCallSafeTransfer(_operator, _from, _to, _id, _data);
                 } else {
@@ -739,18 +731,17 @@ contract ERC1155ERC721 is ProxyImplementation, ERC1155, ERC721 {
     function _burnERC1155(address _from, uint256 _tokenId, uint32 _amount) internal {
         (uint256 bin, uint256 index) = (_tokenId & 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF0000000000FFFFFFFFFFFFFF).getTokenBinIndex();
         packedTokenBalance[_from][bin] = packedTokenBalance[_from][bin].updateTokenBalance(index, _amount, ObjectLib32.Operations.SUB);
-        supplies[_tokenId] = uint32(supplyOf(_tokenId) - _amount);
-        emit TransferSingle(msg.sender == address(_sandContract) ? _from : msg.sender, _from, address(0), _tokenId, _amount);
+        burnt[_tokenId] += _amount;
+        emit TransferSingle(msg.sender == metaTransactionContract ? _from : msg.sender, _from, address(0), _tokenId, _amount);
     }
 
-    // TODO enable ?
+    // TODO disable ?
     function extractERC721(address _sender, uint256 _tokenId, string calldata _uri) external {
         uint256 id = _tokenId & 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF0000000000FFFFFFFFFFFFFF;
-        require(msg.sender == _sender || msg.sender == address(_sandContract) || mSuperOperators[msg.sender], "require meta approval");
+        require(msg.sender == _sender || msg.sender == metaTransactionContract || mSuperOperators[msg.sender], "require meta approval");
         require(erc1155_metadataURIHashes[id] != 0, "Not an ERC1155 Token");
         require(erc1155_metadataURIHashes[id] == keccak256(abi.encodePacked(_uri)), "URI hash does not match");
-        uint32 originalSupply = uint32((_tokenId & 0x000000000000000000000000000000000000000000FFFFFFFF00000000000000) >> 56);
-        uint256 newTokenId = id + ((originalSupply - supplyOf(_tokenId))) * 2**(256-160-8-32);
+        uint256 newTokenId = id + (burnt[_tokenId]) * 2**(256-160-8-32);
         _burnERC1155(_sender, _tokenId, 1);
         _mint(_uri, 1, _sender, _sender, newTokenId, "", true);
         emit Extraction(_tokenId, newTokenId, _uri);

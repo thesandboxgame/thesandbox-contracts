@@ -1,4 +1,4 @@
-pragma solidity 0.5.2;
+pragma solidity ^0.5.2;
 
 import "../../../contracts_common/src/Libraries/BytesUtil.sol";
 import "../../../contracts_common/src/Libraries/SigUtil.sol";
@@ -11,13 +11,13 @@ contract ERC20ApproveExtension is ERC1271Constants{
 
     function approveAndCall(address _target, uint256 _amount, bytes memory _data) public payable returns (bytes memory) {
         _approveFor(msg.sender, _target, _amount);
-        
+
         // ensure the first argument is equal to msg.sender
         // allowing function being called checking the actual sender (that approved the allowance)
         // this means target should not allow call from that contract if not expecting such behavior
         // user should be carefull as usual to not approve any contract without knowing what they'll do
         require(BytesUtil.doFirstParamEqualsAddress(_data, msg.sender), "first param != sender");
-        
+
         (bool success, bytes memory returnData) = _target.call.value(msg.value)(_data);
         require(success, "the call failed");
         return returnData;
@@ -27,7 +27,14 @@ contract ERC20ApproveExtension is ERC1271Constants{
         return approveAndCall(_target, 2**256-1, _data); // assume https://github.com/ethereum/EIPs/issues/717
     }
 
-    function approveViaBasicSignature(address _from, uint256 _messageId, address _target, uint256 _amount, bytes calldata _signature, bool signedOnBehalf) external returns (bool approved) {
+    function approveViaBasicSignature(
+        address _from,
+        uint256 _messageId,
+        address _target,
+        uint256 _amount,
+        bytes calldata _signature,
+        bool signedOnBehalf
+    ) external returns (bool approved) {
         require(!usedApprovalMessages[_from][_messageId], "message already used or revoked");
         bytes memory data = SigUtil.prefixed(keccak256(abi.encodePacked(address(this), APPROVE_TYPEHASH, _from, _messageId, _target,_amount)));
         if(signedOnBehalf) {
@@ -42,7 +49,14 @@ contract ERC20ApproveExtension is ERC1271Constants{
     }
 
     bytes32 constant APPROVE_TYPEHASH = keccak256("Approve(address from,uint256 messageId,address target,uint256 amount)");
-    function approveViaSignature(address _from, uint256 _messageId, address _target, uint256 _amount, bytes calldata _signature, bool signedOnBehalf) external returns (bool approved) {
+    function approveViaSignature(
+        address _from,
+        uint256 _messageId,
+        address _target,
+        uint256 _amount,
+        bytes calldata _signature,
+        bool signedOnBehalf
+    ) external returns (bool approved) {
         require(!usedApprovalMessages[_from][_messageId], "message already used or revoked");
         bytes memory data = abi.encodePacked(
             "\x19\x01",
@@ -55,7 +69,7 @@ contract ERC20ApproveExtension is ERC1271Constants{
                 _amount
             ))
         );
-        
+
         if(signedOnBehalf) {
             require(ERC1271(_from).isValidSignature(data, _signature) == ERC1271_MAGICVALUE, "invalid signature");
         } else {
@@ -76,6 +90,6 @@ contract ERC20ApproveExtension is ERC1271Constants{
     }
 
     function _approveFor(address _owner, address _target, uint256 _amount) internal;
-    
+
     function domainSeparator() internal view returns(bytes32);
 }

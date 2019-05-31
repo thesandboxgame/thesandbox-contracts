@@ -27,6 +27,7 @@ function getPastEvents(contract, sig, options) {
 
 
 function tx(contract, functionName, options, ...args) {
+  // console.log(functionName, ...args);
   return contract.methods[functionName](...args).send(options);
 }
 

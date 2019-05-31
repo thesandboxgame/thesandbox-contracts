@@ -287,6 +287,11 @@ function runERC721tests(title, resetContract, mintERC721, burnERC721) {
         testSafeTransfers("0xff56fe3422");
        
         t.test('supportsInterface', async (t) => {
+            t.test('claim to support erc165', async () => {
+                const result = await call(contract, 'supportsInterface', null, '0x01ffc9a7');
+                assert.equal(result, true);
+            });
+
             t.test('claim to support base erc721 interface', async () => {
                 const result = await call(contract, 'supportsInterface', null, '0x80ac58cd');
                 assert.equal(result, true);
@@ -297,8 +302,13 @@ function runERC721tests(title, resetContract, mintERC721, burnERC721) {
                 assert.equal(result, true);
             });
 
-            t.test('does nto claim to support random interface', async () => {
+            t.test('does not claim to support random interface', async () => {
                 const result = await call(contract, 'supportsInterface', null, '0x88888888');
+                assert.equal(result, false);
+            });
+
+            t.test('does not claim to support the invalid interface', async () => {
+                const result = await call(contract, 'supportsInterface', null, '0xFFFFFFFF');
                 assert.equal(result, false);
             });
         });

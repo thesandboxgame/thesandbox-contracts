@@ -1,4 +1,4 @@
-pragma solidity 0.5.2;
+pragma solidity ^0.5.2;
 
 library BytesUtil {
     function memcpy(uint dest, uint src, uint len) internal pure {
@@ -20,7 +20,7 @@ library BytesUtil {
         }
     }
 
-    function toBytes(uint256 src, uint256 len) internal pure returns (bytes memory) {
+    function pointerToBytes(uint256 src, uint256 len) internal pure returns (bytes memory) {
         bytes memory ret = new bytes(len);
         uint retptr;
         assembly { retptr := add(ret, 32) }
@@ -29,7 +29,7 @@ library BytesUtil {
         return ret;
     }
 
-    function toBytes(address a) internal pure returns (bytes memory b){
+    function addressToBytes(address a) internal pure returns (bytes memory b){
         assembly {
             let m := mload(0x40)
             mstore(add(m, 20), xor(0x140000000000000000000000000000000000000000, a))
@@ -38,7 +38,7 @@ library BytesUtil {
         }
     }
 
-    function toBytes(uint256 a) internal pure returns (bytes memory b){
+    function uint256ToBytes(uint256 a) internal pure returns (bytes memory b){
         assembly {
             let m := mload(0x40)
             mstore(add(m, 32), a)
@@ -74,7 +74,7 @@ library BytesUtil {
         uint dest;
         assembly {dest := add(data, 48)} // 48 = 32 (offset) + 4 (func sig) + 12 (address is only 20 bytes)
 
-        bytes memory addressBytes = BytesUtil.toBytes(_address);
+        bytes memory addressBytes = addressToBytes(_address);
         uint src;
         assembly { src := add(addressBytes, 32) }
     
@@ -87,12 +87,12 @@ library BytesUtil {
         uint src;
         
         assembly {dest := add(data, 48)} // 48 = 32 (offset) + 4 (func sig) + 12 (address is only 20 bytes)
-        bytes memory bbytes = BytesUtil.toBytes(_address);
+        bytes memory bbytes = addressToBytes(_address);
         assembly { src := add(bbytes, 32) }
         memcpy(dest, src, 20);
 
         assembly {dest := add(data, 68)} // 48 = 32 (offset) + 4 (func sig) + 32 (next slot)
-        bbytes = BytesUtil.toBytes(_value);
+        bbytes = uint256ToBytes(_value);
         assembly { src := add(bbytes, 32) }
         memcpy(dest, src, 32);
 

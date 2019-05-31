@@ -1,8 +1,9 @@
-pragma solidity 0.5.2;
+pragma solidity ^0.5.2;
 
 import "../Asset/Interfaces/MintingFeeCollector.sol";
 
 import "../Asset.sol";
+import "../../contracts_common/src/Interfaces/ERC20.sol";
 
 contract TestMintingFeeCollector is MintingFeeCollector {
     
@@ -27,9 +28,9 @@ contract TestMintingFeeCollector is MintingFeeCollector {
         stakes[tokenId] = fee;
     }
 
-    function setFeeCollection(address newCollector, uint256 newFee) external {
+    function setFeeCollection(address newCollector, ERC20 newFeeToken, uint256 newFee) external {
         require(msg.sender == owner);
-        from.setFeeCollection(newCollector, newFee);
+        from.setFeeCollection(newCollector, newFeeToken, newFee);
     }
 
 }

@@ -1,4 +1,4 @@
-pragma solidity 0.5.2;
+pragma solidity ^0.5.2;
 
 interface MintingFeeCollector {
     function multiple_minted(uint256[] calldata tokenIds, uint256 feePerToken) external;

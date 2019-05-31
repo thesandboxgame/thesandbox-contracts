@@ -333,7 +333,29 @@ function runERC1155tests(title, resetContract, mintERC1155) {
                 await tx(contract, 'setApprovalForAll', {from: creator, gas}, operator, false);
                 await expectThrow(tx(contract, 'safeTransferFrom', {from: operator, gas}, creator, user1, assetsId[0], 2, emptyBytes));
             });
-        })
+        });
+
+        t.test('supportsInterface', async (t) => {
+            t.test('claim to support erc165', async () => {
+                const result = await call(contract, 'supportsInterface', null, '0x01ffc9a7');
+                assert.equal(result, true);
+            });
+
+            t.test('claim to support base erc1155 interface', async () => {
+                const result = await call(contract, 'supportsInterface', null, '0xd9b67a26');
+                assert.equal(result, true);
+            });
+
+            t.test('does not claim to support random interface', async () => {
+                const result = await call(contract, 'supportsInterface', null, '0x77777777');
+                assert.equal(result, false);
+            });
+
+            t.test('does not claim to support the invalid interface', async () => {
+                const result = await call(contract, 'supportsInterface', null, '0xFFFFFFFF');
+                assert.equal(result, false);
+            });
+        });
     });
 }
 

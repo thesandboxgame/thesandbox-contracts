@@ -1,4 +1,4 @@
-pragma solidity 0.5.2;
+pragma solidity ^0.5.2;
 
 import "./erc777/ERC20BaseTokenWithERC777Events.sol";
 import { ProxyImplementation } from "../../contracts_common/src/BaseWithStorage/ProxyImplementation.sol";
@@ -10,7 +10,9 @@ contract Sand20Basic is ProxyImplementation, ERC20BaseTokenWithERC777Events {
     }
     function initSand(address _admin, address _beneficiary) public phase('SAND_20') {
         admin = _admin;
-        if(mTotalSupply == 0 ) { _mint(_beneficiary, 3000000000000000000000000000); }
+        if(mTotalSupply == 0 ) {
+            _mint(_beneficiary, 3000000000000000000000000000);
+        }
     }
 
     function name() public pure returns (string memory) { return "SAND"; }

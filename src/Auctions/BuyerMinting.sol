@@ -1,4 +1,4 @@
-pragma solidity 0.5.2;
+pragma solidity ^0.5.2;
 
 import "../../../contracts_common/src/Libraries/SigUtil.sol";
 import "../../../contracts_common/src/Libraries/PriceUtil.sol";

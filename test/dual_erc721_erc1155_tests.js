@@ -99,7 +99,7 @@ function runDualERC1155ERC721tests(title, resetContract, mintDual) {
                 assert.equal(newOwner, receiverAddress);
             });
 
-            // TODO replace with other tests for expectERC1155()
+            // TODO replace with other tests for isERC1155TokenReceiver()
             // t.test('transfering one NFT via ERC721 transferFrom on a dual ERC721/ERC1155 token receiver that return incorrect value for rejection should work', async () => {
             //     const receiverContract = await deployContract(creator, 'TestERC1155ERC721TokenReceiver', contract.options.address, false, false, true, true, true);
             //     const receiverAddress = receiverContract.options.address;

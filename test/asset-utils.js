@@ -131,10 +131,16 @@ module.exports = {
   OfferClaimedEvent,
   OfferCancelledEvent,
   ExtractionEvent,
-  generateTokenId(creator, supply, fixedID, index) {
+  generateTokenId(creator, supply, fixedID=0, index=0, nftIndex = 0) {
     
     return ((new BN(creator.slice(2), 16)).mul(new BN('1000000000000000000000000', 16)))
-      .add(supply == 1 ? new BN(0) : new BN('800000000000000000000000', 16).add(new BN(supply).mul(new BN('100000000000000', 16))))
+      .add(supply == 1 ? (new BN(nftIndex)).mul(new BN('100000000000000', 16)) : new BN('800000000000000000000000', 16))
       .add(new BN(fixedID)).add(new BN(index)).toString(10)
-  }
+  },
+  old_generateTokenId(creator, supply, fixedID=0, index=0, nftIndex = 0) {
+    
+    return ((new BN(creator.slice(2), 16)).mul(new BN('1000000000000000000000000', 16)))
+      .add(supply == 1 ? (new BN(nftIndex)).mul(new BN('100000000000000', 16)) : new BN('800000000000000000000000', 16).add(new BN(supply).mul(new BN('100000000000000', 16))))
+      .add(new BN(fixedID)).add(new BN(index)).toString(10)
+  },
 };

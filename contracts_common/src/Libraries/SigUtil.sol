@@ -1,4 +1,4 @@
-pragma solidity 0.5.2;
+pragma solidity ^0.5.2;
 
 library SigUtil{
     function recover(bytes32 hash, bytes memory sig) internal pure returns (address recovered) {

@@ -1,4 +1,4 @@
-pragma solidity 0.5.2;
+pragma solidity ^0.5.2;
 
 contract TestERC1155ERC721TokenReceiver {
 
@@ -12,7 +12,7 @@ contract TestERC1155ERC721TokenReceiver {
     address private tokenContract;
     mapping(uint256 => bool) private tokens;
 
-    bytes4 constant private ERC1155_EXPECT = 0xbb74d243;
+    bytes4 constant private ERC1155_IS_RECEIVER = 0x0d912442;
     bytes4 constant private ERC1155_RECEIVED = 0xf23a6e61;
     bytes4 constant private ERC1155_BATCH_RECEIVED = 0xbc197c81;
     bytes4 private constant _ERC721_RECEIVED = 0x150b7a02;
@@ -68,8 +68,8 @@ contract TestERC1155ERC721TokenReceiver {
         }
     }
 
-    function expectERC1155() external pure returns(bytes4) {
-        return ERC1155_EXPECT;
+    function isERC1155TokenReceiver() external pure returns(bytes4) {
+        return ERC1155_IS_RECEIVER;
     }
     
     function onERC1155BatchReceived(

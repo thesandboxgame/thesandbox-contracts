@@ -31,6 +31,7 @@ const {
     mintMultipleAndReturnTokenIds,
     mintTokensWithSameURIAndSupply,
     mintTokensIncludingNFTWithSameURI,
+    generateTokenId,
 } = require('../asset-utils');
 
 const creator = accounts[0];
@@ -138,10 +139,17 @@ function runERC721ExtractionTests(title, resetContract) {
         });
 
 
-        t.test('should be able to extract as many as there is tokens -1', async () => {
+        t.test('should be able to extract as many as there is tokens', async () => {
             const tokenId = await mintAndReturnTokenId(contract, ipfsHashString, 2, creator);
             await tx(contract, 'extractERC721', {from: creator, gas}, creator, tokenId, ipfsHashString);
             await tx(contract, 'extractERC721', {from: creator, gas}, creator, tokenId, ipfsHashString);
+        });
+
+        t.test('should fail to extract when no more token available', async () => {
+            const tokenId = await mintAndReturnTokenId(contract, ipfsHashString, 2, creator);
+            await tx(contract, 'extractERC721', {from: creator, gas}, creator, tokenId, ipfsHashString);
+            await tx(contract, 'extractERC721', {from: creator, gas}, creator, tokenId, ipfsHashString);
+            await expectThrow(tx(contract, 'extractERC721', {from: creator, gas}, creator, tokenId, ipfsHashString));
         });
 
         t.test('should NOT extract as many as there is tokens', async () => {
@@ -166,9 +174,41 @@ function runERC721ExtractionTests(title, resetContract) {
 
         t.test('last token should be not be transferable via ERC721 transfer', async () => {
             const tokenId = await mintAndReturnTokenId(contract, ipfsHashString, 2, creator);
-            await tx(contract, 'extractERC721', {from: creator, gas}, creator, tokenId, ipfsHashString);
+            const receipt = await tx(contract, 'extractERC721', {from: creator, gas}, creator, tokenId, ipfsHashString);
+            const eventsMatching = await getEventsFromReceipt(contract, ExtractionEvent, receipt);
+            const nftTokenId = eventsMatching[0].returnValues[1];
             await expectThrow(tx(contract, 'transferFrom', {from: creator, gas}, creator, user1, tokenId));
         });
+        
+
+        t.test('extracted token should be transferable via ERC721 transfer', async () => {
+            const tokenId = await mintAndReturnTokenId(contract, ipfsHashString, 2, creator);
+            const receipt = await tx(contract, 'extractERC721', {from: creator, gas}, creator, tokenId, ipfsHashString);
+            const eventsMatching = await getEventsFromReceipt(contract, ExtractionEvent, receipt);
+            const nftTokenId = eventsMatching[0].returnValues[1];
+            await tx(contract, 'transferFrom', {from: creator, gas}, creator, user1, nftTokenId);
+        });
+
+        t.test('extracted token should be index 0', async () => {
+            const tokenId = await mintAndReturnTokenId(contract, ipfsHashString, 10, creator);
+            assert.equal(tokenId, generateTokenId(creator, 10, 0));
+            const receipt = await tx(contract, 'extractERC721', {from: creator, gas}, creator, tokenId, ipfsHashString);
+            const eventsMatching = await getEventsFromReceipt(contract, ExtractionEvent, receipt);
+            const nftTokenId = eventsMatching[0].returnValues[1];
+            assert.equal(nftTokenId, generateTokenId(creator, 1, 0, 0));
+        });
+
+        t.test('second extracted token should be index 1', async () => {
+            const tokenId = await mintAndReturnTokenId(contract, ipfsHashString, 10, creator, 101);
+            assert.equal(tokenId, generateTokenId(creator, 10, 101));
+            await tx(contract, 'extractERC721', {from: creator, gas}, creator, tokenId, ipfsHashString);
+            const receipt = await tx(contract, 'extractERC721', {from: creator, gas}, creator, tokenId, ipfsHashString);
+            const eventsMatching = await getEventsFromReceipt(contract, ExtractionEvent, receipt);
+            const nftTokenId = eventsMatching[0].returnValues[1];
+            assert.equal(nftTokenId, generateTokenId(creator, 1, 101, 0, 1));
+        });
+
+        
     });
 }
 
