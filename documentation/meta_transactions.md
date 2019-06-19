@@ -1,7 +1,7 @@
 Native Meta Transaction : EIP-1776
 ==================================
 
-As mentioned in the [Sand document](Sand.md), our ERC-20 implement [EIP-1776](https://github.com/ethereum/EIPs/issues/1776) which allow users of Externally Owned Account (EOA for short) like metamask users and most current wallet’s user, to execute actions on the ethereum network without owning Ether, the currency necessary to perform transactions on ethereum.
+As mentioned in the [Sand document](Sand.md), our ERC-20 implement [EIP-1776 DRAFT](https://github.com/ethereum/EIPs/issues/1776) which allow users of Externally Owned Account (EOA for short) like metamask users and most current wallet’s user, to execute actions on the ethereum network without owning Ether, the currency necessary to perform transactions on ethereum.
 
 The way it works is as follows:
 
