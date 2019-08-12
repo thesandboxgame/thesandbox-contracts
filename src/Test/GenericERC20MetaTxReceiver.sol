@@ -1,9 +1,8 @@
-pragma solidity ^0.5.2;
+pragma solidity 0.5.9;
 
 import "../../contracts_common/src/Interfaces/ERC20.sol";
 
 contract GenericERC20MetaTxReceiver {
-
     address metaTxContract;
     ERC20 token;
     address owner;
@@ -19,17 +18,31 @@ contract GenericERC20MetaTxReceiver {
         metaTxContract = _metaTxContract;
     }
 
-    function erc20_tokensReceived(address from, address tokenContract, uint256 amount, bytes calldata data) external {
+    function erc20_tokensReceived(
+        address from,
+        address tokenContract,
+        uint256 amount,
+        bytes calldata data
+    ) external {
         // TODO check token being given
-        require(msg.sender == address(metaTxContract) || msg.sender == tokenContract , "sender != metaTxContract && != tokenContract");
+        require(
+            msg.sender == address(metaTxContract) ||
+                msg.sender == tokenContract,
+            "sender != metaTxContract && != tokenContract"
+        );
         require(amount == price, "not enough value");
         balance += amount;
         emit Received(from, amount);
     }
 
-    function meta_transaction_received(address sender, bytes calldata data) external {
+    function meta_transaction_received(address sender, bytes calldata data)
+        external
+    {
         (address addr, uint256 value) = abi.decode(data, (address, uint256));
-        require(sender == msg.sender || msg.sender == address(metaTxContract), "sender != sender && != metaTxContract");        
+        require(
+            sender == msg.sender || msg.sender == address(metaTxContract),
+            "sender != sender && != metaTxContract"
+        );
         emit Received(addr, value);
     }
 

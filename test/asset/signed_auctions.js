@@ -48,7 +48,8 @@ const {
 const creator = accounts[0];
 const user1 = accounts[1];
 
-const ipfsHashString = 'ipfs://QmYwAPJzv5CZsnA625s3Xf2nemtYgPpHdWEz79ojWnPbdG';
+const ipfsHashString = '0x78b9f42c22c3c8b260b781578da3151e8200c741c6b7437bafaff5a9df9b403e';
+const ipfsUrl = 'ipfs://bafybeidyxh2cyiwdzczgbn4bk6g2gfi6qiamoqogw5bxxl5p6wu57g2ahy';
 
 function runSignedAuctionsTests(title, resetContracts) {
     tap.test(title + ' signed auctions', async (t)=> {
@@ -170,8 +171,8 @@ function runSignedAuctionsTests(title, resetContracts) {
             buyAmount = 1;
             token = '0x0000000000000000000000000000000000000000';
             ids = [
-                await mintAndReturnTokenId(contracts.Asset, ipfsHashString, 100, creator, 1),
-                await mintAndReturnTokenId(contracts.Asset, ipfsHashString, 200, creator, 2)
+                await mintAndReturnTokenId(contracts.AssetBouncer, ipfsHashString, 100, creator, 1),
+                await mintAndReturnTokenId(contracts.AssetBouncer, ipfsHashString, 200, creator, 2)
             ];
             offerId = new BN(crypto.randomBytes(32), 16).toString(10);
             startedAt = Math.floor(Date.now() / 1000);

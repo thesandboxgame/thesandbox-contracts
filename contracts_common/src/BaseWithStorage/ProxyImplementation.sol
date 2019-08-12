@@ -23,10 +23,10 @@ pragma solidity ^0.5.2;
 // }
 
 contract ProxyImplementation {
-    mapping (string => bool) initialised;
-    
+    mapping(string => bool) initialised;
+
     modifier phase(string memory _phase) {
-        if(!initialised[_phase]) {
+        if (!initialised[_phase]) {
             initialised[_phase] = true;
             _;
         }

@@ -205,6 +205,14 @@ module.exports = {
   getPastEvents,
   zeroAddress: '0x0000000000000000000000000000000000000000',
   emptyBytes:'0x',
+  decodeEvents: (inputs, receipt, logIndex) => {
+    const event = receipt.events["" + logIndex];
+    return web3.eth.abi.decodeLog(inputs, event.raw.data, event.raw.topics);
+  },
+  decodeLogs: (inputs, receipt, logIndex) => {
+    const log = receipt.logs[logIndex];
+    return web3.eth.abi.decodeLog(inputs, log.data, log.topics);
+  },
   sendSignedTransaction(txData, to, privateKey) {
     const data = txData instanceof Object ? txData.encodeABI() : txData;
     const privateKeyHex = privateKey instanceof Buffer ? ('0x' + privateKey.toString('hex')) : privateKey;

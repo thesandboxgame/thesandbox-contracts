@@ -1,29 +1,16 @@
 pragma solidity ^0.5.2;
 
-
-/**
- * Utility library of inline functions on addresses
- */
 library AddressUtils {
+    function isContract(address addr) internal view returns (bool) {
+        // for accounts without code, i.e. `keccak256('')`:
+        bytes32 accountHash = 0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470;
 
-  /**
-   * Returns whether the target address is a contract
-   * @dev This function will return false if invoked during the constructor of a contract,
-   * as the code is not actually created until after the constructor finishes.
-   * @param addr address to check
-   * @return whether the target address is a contract
-   */
-  function isContract(address addr) internal view returns (bool) {
-    uint256 size;
-    // XXX Currently there is no better way to check if there is a contract in an address
-    // than to check the size of the code at that address.
-    // See https://ethereum.stackexchange.com/a/14016/36603
-    // for more details about how this works.
-    // TODO Check this again before the Serenity release, because all addresses will be
-    // contracts then.
-    // solium-disable-next-line security/no-inline-assembly
-    assembly { size := extcodesize(addr) }
-    return size > 0;
-  }
+        bytes32 codehash;
+        // solium-disable-next-line security/no-inline-assembly
+        assembly {
+            codehash := extcodehash(addr)
+        }
+        return (codehash != 0x0 && codehash != accountHash);
+    }
 
 }

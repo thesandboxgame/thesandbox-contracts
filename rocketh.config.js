@@ -1,7 +1,12 @@
 
 module.exports = {
     contractSrcPath: ['src', 'contracts_common/src'],
-    deploymentChainIds: ['1','3','4','42','18'],
+    deploymentChainIds: ['1','3','4','42', '18'],
+    ganacheOptions: {
+        debug: true, 
+        vmErrorsOnRPCResponse: true,
+        gasLimit: '0x7a1200', // 8000000
+    },
     accounts: {
         default: {
             type: "mnemonic",
@@ -17,6 +22,11 @@ module.exports = {
         sandUpgrader : "sandAdmin", // can upgrade the Sand smart contract and change the upgrader
         sandAdmin: 0,
         assetAdmin: "sandAdmin", // can add super operator and change admin to Asset
+        assetBouncerAdmin: "sandAdmin",
+        genesisBouncerAdmin: "sandAdmin",
+        genesisMinter: "sandAdmin",
+        assetUpgrader: "sandAdmin",
+        orbsBeneficiary: "sandAdmin",
         others: {
             default: "from:3",
             deployments: ""

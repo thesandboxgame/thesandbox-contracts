@@ -1,9 +1,8 @@
-pragma solidity ^0.5.2;
+pragma solidity 0.5.9;
 
 import "../../contracts_common/src/Interfaces/ERC20.sol";
 
 contract ERC20MetaTxReceiver {
-
     ERC20 token;
     address owner;
     uint256 price;
@@ -17,11 +16,19 @@ contract ERC20MetaTxReceiver {
         owner = msg.sender;
     }
 
-    function receiveMeta(address sender, uint256 value, string calldata name, uint256 test) external {
-        require(msg.sender == sender || msg.sender == address(token), "sender != msg.sender || token");
+    function receiveMeta(
+        address sender,
+        uint256 value,
+        string calldata name,
+        uint256 test
+    ) external {
+        require(
+            msg.sender == sender || msg.sender == address(token),
+            "sender != msg.sender || token"
+        );
         require(value == price, "not enough value");
         token.transferFrom(sender, address(this), value);
-        
+
         balance += value;
         emit Received(sender, value, name, test);
     }

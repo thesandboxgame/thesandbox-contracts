@@ -9,11 +9,10 @@ contract ERC1271 {
     * MUST return the bytes4 magic value 0x20c13b0b when function passes.
     * MUST NOT modify state (using STATICCALL for solc < 0.5, view modifier for solc > 0.5)
     * MUST allow external calls
-    */ 
-    function isValidSignature(
-        bytes memory _data, 
-        bytes memory _signature)
+    */
+
+    function isValidSignature(bytes memory _data, bytes memory _signature)
         public
-        view 
+        view
         returns (bytes4 magicValue);
 }

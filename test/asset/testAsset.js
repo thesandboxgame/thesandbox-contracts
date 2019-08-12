@@ -1,6 +1,6 @@
 const rocketh = require('rocketh');
 const {getDeployedContract, } = require('../../lib');
-const {mintAndReturnTokenId} = require('../asset-utils');
+const {mintAndReturnTokenId, mintMultipleAndReturnTokenIds} = require('../asset-utils');
 
 const {runERC721tests} = require('../erc721_tests');
 const {runDualERC1155ERC721tests} = require('../dual_erc721_erc1155_tests');
@@ -11,30 +11,21 @@ const {runERC721ExtractionTests} = require('./erc721_extraction');
 const {runSignedAuctionsTests} = require('./signed_auctions');
 
 
-async function deployAssetAndSand() {
-    await rocketh.runStages();
-    return {
-        Asset: getDeployedContract('Asset'),
-        Sand: getDeployedContract('Sand'),
-    }
-}
-
-async function deployAssetAndSandAndAuction() {
+async function deployContracts() {
     await rocketh.runStages();
     const deployedContracts = {
         Asset: getDeployedContract('Asset'),
+        AssetBouncer: getDeployedContract('ORBBouncer'),
+        GenesisBouncer: getDeployedContract('GenesisBouncer'),
         Sand: getDeployedContract('Sand'),
         AssetSignedAuction: getDeployedContract('AssetSignedAuction'),
     }    
     return deployedContracts;
 }
 
-async function deployAsset() {
-    await rocketh.runStages();
-    return  getDeployedContract('Asset');
-}
+const ipfsHashString = '0x78b9f42c22c3c8b260b781578da3151e8200c741c6b7437bafaff5a9df9b403e';
+const ipfsUrl = 'ipfs://bafybeidyxh2cyiwdzczgbn4bk6g2gfi6qiamoqogw5bxxl5p6wu57g2ahy';
 
-const ipfsHashString = 'ipfs://QmYwAPJzv5CZsnA625s3Xf2nemtYgPpHdWEz79ojWnPbdG';
 let counter = 0;
 function mint(contract, creator) {
     counter++;
@@ -49,11 +40,33 @@ function mintWithSpecificIPFSHash(contract, ipfsHashString, amount, creator) {
     return mintAndReturnTokenId(contract, ipfsHashString, amount, creator, counter);
 }
 
-runERC721tests('Asset', deployAsset, mint);
-runDualERC1155ERC721tests('Asset', deployAsset, mintDual);
-runAssetTests('Asset', deployAssetAndSandAndAuction);
-runAssetTests('Asset', deployAssetAndSandAndAuction, 101);
-runFixedIDAssetTests('Asset', deployAssetAndSandAndAuction);
-runERC1155tests('Asset', deployAsset, mintDual);
-runERC721ExtractionTests('Asset', deployAsset)
-runSignedAuctionsTests('Asset', deployAssetAndSandAndAuction);
+function AssetContract() {
+    this.counter = 0;
+    this.contract = null;
+    this.mintContract = null;
+}
+AssetContract.prototype.resetContract = async function () {
+    await rocketh.runStages();
+    this.contract = getDeployedContract('Asset');
+    this.mintContract = getDeployedContract('ORBBouncer');
+    return this.contract;
+};
+
+AssetContract.prototype.mintERC1155 = function (creator, amount, ipfsS) {
+    this.counter++;
+    return mintAndReturnTokenId(this.mintContract, ipfsS || ipfsHashString, amount, creator, this.counter);
+};
+
+AssetContract.prototype.mintMultipleERC1155 = function (creator, amounts, ipfsS) {
+    this.counter += Math.floor((amounts.length - 1) / 8) + 1;
+    return mintMultipleAndReturnTokenIds(this.mintContract, ipfsS || ipfsHashString, amounts, creator, this.counter);
+};
+
+runERC721tests('Asset', deployContracts, mint);
+runDualERC1155ERC721tests('Asset', deployContracts, mintDual);
+runAssetTests('Asset', deployContracts);
+runAssetTests('Asset', deployContracts, 101);
+runFixedIDAssetTests('Asset', deployContracts);
+runERC1155tests('Asset', new AssetContract());
+runERC721ExtractionTests('Asset', deployContracts)
+runSignedAuctionsTests('Asset', deployContracts);

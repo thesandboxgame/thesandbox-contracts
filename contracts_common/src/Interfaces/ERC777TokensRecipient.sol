@@ -8,8 +8,8 @@
 // solhint-disable-next-line compiler-fixed
 pragma solidity ^0.5.2;
 
-
-/* interface */ contract ERC777TokensRecipient {
+/* interface */
+contract ERC777TokensRecipient {
     function tokensReceived(
         address operator,
         address from,

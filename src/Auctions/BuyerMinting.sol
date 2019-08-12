@@ -1,4 +1,4 @@
-pragma solidity ^0.5.2;
+pragma solidity 0.5.9;
 
 import "../../../contracts_common/src/Libraries/SigUtil.sol";
 import "../../../contracts_common/src/Libraries/PriceUtil.sol";
@@ -7,7 +7,8 @@ import "../Asset.sol";
 import "../../../contracts_common/src/Interfaces/ERC20.sol";
 import "../TheSandbox712.sol";
 
-contract BuyerMinting is TheSandbox712{
+contract BuyerMinting is
+    TheSandbox712
 
     // bytes32 constant AUCTION_TYPEHASH = keccak256("MintAuction(address token,uint256 offerId,uint256 startingPrice,uint256 endingPrice,uint256 startedAt,uint256 duration,uint256 packs,string uris,bytes lengths,bytes _supplies)");
 
@@ -22,18 +23,18 @@ contract BuyerMinting is TheSandbox712{
     // }
 
     // function claimMintOffer(
-    //     address buyer, 
-    //     address payable seller, 
-    //     address token, 
-    //     uint256 buyAmount, 
-    //     uint256[] calldata auctionData, 
+    //     address buyer,
+    //     address payable seller,
+    //     address token,
+    //     uint256 buyAmount,
+    //     uint256[] calldata auctionData,
     //     string uris,
     //     uint256[] lengths,
     //     uint256[] indexes,
     //     uint256[] amounts,
     //     bytes calldata signature
     // ) external payable {
-        
+
     //     if(notMintedYet) {
     //         ids = asset.mintMultipleWithNFT(creator, sandAmount, uris, lengths, supplies, numNFTs, creator); // TODO minting should return the i
     //     } else {
@@ -46,5 +47,4 @@ contract BuyerMinting is TheSandbox712{
     //     }
     //     asset.batchTransferFrom(seller, buyer, ids, packAmounts);
     // }
-
-}
+{}

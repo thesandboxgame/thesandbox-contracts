@@ -1,15 +1,16 @@
-pragma solidity ^0.5.2;
+pragma solidity 0.5.9;
 
-import { ProxyImplementation } from "../../../contracts_common/src/BaseWithStorage/ProxyImplementation.sol";
+import {
+    ProxyImplementation
+} from "../../../contracts_common/src/BaseWithStorage/ProxyImplementation.sol";
 
 // from https://github.com/ricmoo/ethers-airdrop/blob/master/AirDropToken.sol
 // https://blog.ricmoo.com/merkle-air-drops-e6406945584d
 contract ERC20MerkleDropExtension is ProxyImplementation {
-
     bytes32 rootHash;
-    mapping (uint256 => uint256) redeemed;
+    mapping(uint256 => uint256) redeemed;
 
-    function initMerkleDrop(bytes32 _rootHash)  public phase("merkleDrop") {
+    function initMerkleDrop(bytes32 _rootHash) public phase("merkleDrop") {
         rootHash = _rootHash;
     }
 
@@ -19,8 +20,12 @@ contract ERC20MerkleDropExtension is ProxyImplementation {
         return ((redeemedBlock & redeemedMask) != 0);
     }
 
-    function redeemPackage(uint256 _index, address _recipient, uint256 _amount, bytes32[] calldata _merkleProof) external {
-
+    function redeemPackage(
+        uint256 _index,
+        address _recipient,
+        uint256 _amount,
+        bytes32[] calldata _merkleProof
+    ) external {
         // Make sure this package has not already been claimed (and claim it)
         uint256 redeemedBlock = redeemed[_index / 256];
         uint256 redeemedMask = (uint256(1) << uint256(_index % 256));
@@ -43,7 +48,7 @@ contract ERC20MerkleDropExtension is ProxyImplementation {
         require(node == rootHash);
 
         // Redeem!
-       _mint(_recipient, _amount); // this increase the totalSupply 
+        _mint(_recipient, _amount); // this increase the totalSupply
     }
 
     function _mint(address _to, uint256 _amount) internal;

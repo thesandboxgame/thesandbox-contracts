@@ -9,10 +9,9 @@ contract Ownable {
     address payable public owner;
 
     event OwnershipTransferred(
-      address indexed previousOwner,
-      address indexed newOwner
+        address indexed previousOwner,
+        address indexed newOwner
     );
-
 
     /**
     * @dev The Ownable constructor sets the original `owner` of the contract to the sender

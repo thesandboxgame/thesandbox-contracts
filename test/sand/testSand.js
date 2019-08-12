@@ -145,17 +145,17 @@ async function upgradedTo777AndThenDowngradedTo20() {
   return contracts.Sand;
 }
 
-runERC20Tests('non-upgradeable Basic SAND (with ERC777 events)', nonUpgradeableBasicSand, {shouldEmitERC777Events: true});
+runERC20Tests('non-upgradeable Basic SAND (with ERC777 events)', nonUpgradeableBasicSand, {shouldEmitERC777Events: true, testBurn: true});
 
-runERC20Tests('non-upgradeable SAND with ERC777 events', nonUpgradeableSand, {shouldEmitERC777Events: true});
+runERC20Tests('non-upgradeable SAND with ERC777 events', nonUpgradeableSand, {shouldEmitERC777Events: true, testBurn: true});
 
-runERC20Tests('upgradeable Basic SAND (with ERC777 events)', upgradableBasicSand, {shouldEmitERC777Events: true});
+runERC20Tests('upgradeable Basic SAND (with ERC777 events)', upgradableBasicSand, {shouldEmitERC777Events: true, testBurn: true});
 
-runERC20Tests('upgradeable SAND with ERC777 events', upgradableSand, {shouldEmitERC777Events: true});
+runERC20Tests('upgradeable SAND with ERC777 events', upgradableSand, {shouldEmitERC777Events: true, testBurn: true});
 
-runERC20Tests('SAND upgraded to ERC777', erc777UpgradedFrom20, {shouldEmitERC777Events: true});
+runERC20Tests('SAND upgraded to ERC777', erc777UpgradedFrom20, {shouldEmitERC777Events: true, testBurn: true});
 
-runERC20Tests('SAND upgraded to ERC777 and then downgraded to ERC20', upgradedTo777AndThenDowngradedTo20, {shouldEmitERC777Events: true});
+runERC20Tests('SAND upgraded to ERC777 and then downgraded to ERC20', upgradedTo777AndThenDowngradedTo20, {shouldEmitERC777Events: true, testBurn: true});
 
 runERC20ApproveExtensionTests('non-upgradeable sand approve extenstion', nonUpgradeableSand);
 runERC20ApproveExtensionTests('upgradeable sand approve extenstion', upgradableSand);

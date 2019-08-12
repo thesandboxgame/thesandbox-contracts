@@ -100,6 +100,9 @@ module.exports = async ({namedAccounts, initialRun}) => {
       } else {
         const deployment = rocketh.deployment('SandProxy'); // TODO integrate that in getDeployedContract alternative
         transactionHash = deployment.transactionHash;
+        if(initialRun) {
+          console.log('reusing SandProxy at ' + deployment.address);
+        }
       }
       
       
@@ -131,7 +134,9 @@ module.exports = async ({namedAccounts, initialRun}) => {
           sandBeneficiary
       );
   } else {
-      // console.log('check if upgrade necessary ...');
+      if(initialRun) {
+        console.log('reusing Sand at ' + sand.options.address + ', checking if upgrade necessary ...');
+      }
       const different = await fetchIfDifferent(['data'],
           'SandProxy',
           {from: deployer, gas},
@@ -141,7 +146,7 @@ module.exports = async ({namedAccounts, initialRun}) => {
           initData
       );
       if(different) {
-          console.log('TODO upgrades');
+        console.log('TODO upgrade Sand', JSON.stringify({address: sandImplementation.options.address, initData}, null, '  '));
       }
   }
 };

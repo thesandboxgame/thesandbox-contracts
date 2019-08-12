@@ -10,7 +10,8 @@ pragma solidity ^0.5.2;
 
 import "./ERC20.sol";
 
-/* interface */ contract ERC20WithMetadata is ERC20 {
+/* interface */
+contract ERC20WithMetadata is ERC20 {
     function name() public view returns (string memory);
     function symbol() public view returns (string memory);
     function decimals() public view returns (uint8);
