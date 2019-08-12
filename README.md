@@ -17,12 +17,12 @@ Blockchain Features
 
 We’re adopting the best standards to reach to players who are not familiar with Blockchain and Web3 technologies, simplifying the UX and on-boarding 
 
-- Dual token structure smart-contract: [ERC-721](https://github.com/ethereum/eips/issues/721) / [ERC-1155](https://github.com/ethereum/EIPs/issues/1155)
+- Dual token structure smart-contract: [ERC-721](https://eips.ethereum.org/EIPS/eip-721) / [ERC-1155](https://eips.ethereum.org/EIPS/eip-1155)
 - Escrowless Auctions
 - Meta-Transactions
 - Upgradable ERC-20 smart-contract
-- [EIP-712](https://github.com/ethereum/EIPs/blob/master/EIPS/eip-712.md) for Human-Readable signature messages
-- [EIP-1776](https://github.com/ethereum/EIPs/issues/1776) submitted by Pixowl to Ethereum for Native Meta-Transactions
+- [EIP-712 DRAFT](https://eips.ethereum.org/EIPS/eip-712) for Human-Readable signature messages
+- [EIP-1776 DRAFT](https://github.com/ethereum/EIPs/issues/1776) submitted by Pixowl to Ethereum for Native Meta-Transactions
 
 More detailed information can be found on our Medium article: [https://medium.com/sandbox-game/blockchain-features-in-the-sandbox-7db91fcc615c](https://medium.com/sandbox-game/blockchain-features-in-the-sandbox-7db91fcc615c)
 
