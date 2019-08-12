@@ -10,8 +10,6 @@ import "../../contracts_common/src/Libraries/SafeMath.sol";
 import "../../contracts_common/src/Interfaces/ERC721.sol";
 import "../../contracts_common/src/Interfaces/ERC721TokenReceiver.sol";
 
-import "./Interfaces/AssetBouncer.sol";
-
 import "../../contracts_common/src/BaseWithStorage/SuperOperators.sol";
 
 contract ERC1155ERC721 is SuperOperators, ERC1155, ERC721 {
