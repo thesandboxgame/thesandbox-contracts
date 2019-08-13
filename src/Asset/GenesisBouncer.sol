@@ -1,10 +1,9 @@
 pragma solidity 0.5.9;
 
-import "./Interfaces/AssetBouncer.sol";
 import "./ERC1155ERC721.sol";
 import "../../contracts_common/src/BaseWithStorage/Admin.sol";
 
-contract GenesisBouncer is Admin, AssetBouncer {
+contract GenesisBouncer is Admin {
     ERC1155ERC721 asset;
     mapping(address => bool) minters;
 

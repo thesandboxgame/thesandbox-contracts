@@ -16,7 +16,7 @@ const chainId = rocketh.chainId;
 const gas = 6721975; // 7500000
 
 module.exports = async ({namedAccounts, initialRun}) => {
-    if (chainId === 1) { // || chainId == 4) { // || chainId == 18) { // TODO remove
+    if (chainId == 1) { // || chainId == 4) { // || chainId == 18) { // TODO remove
         return;
     }
     const {
@@ -32,6 +32,7 @@ module.exports = async ({namedAccounts, initialRun}) => {
 
     let assetDeployResult;
     try {
+        // console.log({deployer, sand: sandContract.options.address});
         assetDeployResult = await deployIfDifferent(['data'],
             'Asset',
             {from: deployer, gas},
@@ -45,38 +46,6 @@ module.exports = async ({namedAccounts, initialRun}) => {
         }
     } catch (e) {
         console.error('error deploying Asset', e);
-    }
-    const asset = assetDeployResult.contract;
-
-    await tx({from: deployer, gas}, sandContract, 'setSuperOperator', asset.options.address, true);
-
-    const auctionDifferent = await fetchIfDifferent(['data'],
-        'AssetSignedAuction',
-        {from: deployer, gas},
-        'AssetSignedAuction',
-        sandContract.options.address,
-        asset.options.address
-    );
-
-    if (auctionDifferent) {
-        await deployIfDifferent(['data'],
-            'AssetSignedAuction',
-            {from: deployer, gas},
-            'AssetSignedAuction',
-            sandContract.options.address,
-            asset.options.address
-        );
-
-        // TODO outside with if checks to make idempotent
-        const assetSignedAuctionContract = getDeployedContract('AssetSignedAuction');
-        await tx({from: deployer, gas}, asset, 'setSuperOperator', assetSignedAuctionContract.options.address, true);
-        await tx({from: deployer, gas}, sandContract, 'setSuperOperator', assetSignedAuctionContract.options.address, true);
-
-        await tx({from: deployer, gas}, asset, 'changeAdmin', assetAdmin);
-    } else {
-        const assetSignedAuctionContract = getDeployedContract('AssetSignedAuction');
-        if (initialRun) {
-            console.log('reusing Auction at ' + assetSignedAuctionContract.options.address);
-        }
+        process.exit(1);
     }
 };

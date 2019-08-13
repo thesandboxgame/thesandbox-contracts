@@ -12,7 +12,7 @@ const chainId = rocketh.chainId;
 const gas = 6721975; // 7500000
 
 module.exports = async ({namedAccounts, initialRun}) => {
-    if (chainId === 1) { // || chainId == 4) { // || chainId == 18) { // TODO remove
+    if (chainId == 1 || chainId == 4) { // || chainId == 18) { // TODO remove
         return;
     }
     const {
