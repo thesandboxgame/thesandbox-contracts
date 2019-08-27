@@ -45,14 +45,14 @@ contract ORBBouncer is AssetBouncer {
             msg.sender == _sender || metaTransactionContracts[msg.sender],
             "not authorized"
         );
-        bytes memory powerPack = new bytes(0);
+        bytes memory rarityPack = new bytes(0);
         return
             asset.mintMultiple(
                 _sender,
                 _packId,
                 _hash,
                 _supplies,
-                powerPack,
+                rarityPack,
                 _owner,
                 _data
             );

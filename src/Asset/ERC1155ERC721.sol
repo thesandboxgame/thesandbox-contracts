@@ -46,7 +46,7 @@ contract ERC1155ERC721 is SuperOperators, ERC1155, ERC721 {
     mapping(address => mapping(address => bool)) private operatorsForAll; // erc721 and erc1155
     mapping(uint256 => address) private erc721_operators; // erc721
     mapping(uint256 => bytes32) private metadataHash; // erc721 and erc1155
-    mapping(uint256 => bytes) private powerPack; // rarity configuration per packs (2 bits per Asset)
+    mapping(uint256 => bytes) private rarityPack; // rarity configuration per packs (2 bits per Asset)
     mapping(uint256 => uint32) private nextCollectionIndex; // extraction
 
     mapping(address => address) private creatorship; // creatorship transfer
@@ -103,7 +103,7 @@ contract ERC1155ERC721 is SuperOperators, ERC1155, ERC721 {
         uint48 _packId,
         bytes32 _hash,
         uint256 _supply,
-        uint8 _power,
+        uint8 _rarity,
         address _owner,
         bytes calldata _data
     ) external returns (uint256 tokenId) {
@@ -113,7 +113,7 @@ contract ERC1155ERC721 is SuperOperators, ERC1155, ERC721 {
         _mint(
             _hash,
             _supply,
-            _power,
+            _rarity,
             msg.sender,
             _owner,
             tokenId,
@@ -142,7 +142,7 @@ contract ERC1155ERC721 is SuperOperators, ERC1155, ERC721 {
     function _mint(
         bytes32 _hash,
         uint256 _supply,
-        uint8 _power,
+        uint8 _rarity,
         address _operator,
         address _owner,
         uint256 _tokenId,
@@ -153,10 +153,10 @@ contract ERC1155ERC721 is SuperOperators, ERC1155, ERC721 {
         if (!_extraction) {
             require(uint256(metadataHash[uriId]) == 0, "id already used");
             metadataHash[uriId] = _hash;
-            require(_power < 4, "power >= 4");
+            require(_rarity < 4, "rarity >= 4");
             bytes memory _pack = new bytes(1);
-            _pack[0] = bytes1(_power * 64);
-            powerPack[uriId] = _pack;
+            _pack[0] = bytes1(_rarity * 64);
+            rarityPack[uriId] = _pack;
         }
         if (_supply == 1) {
             // ERC721
@@ -194,7 +194,7 @@ contract ERC1155ERC721 is SuperOperators, ERC1155, ERC721 {
         uint48 _packId,
         bytes32 _hash,
         uint256[] calldata _supplies,
-        bytes calldata _powerPack,
+        bytes calldata _rarityPack,
         address _owner,
         bytes calldata _data
     ) external returns (uint256[] memory tokenIds) {
@@ -204,7 +204,7 @@ contract ERC1155ERC721 is SuperOperators, ERC1155, ERC721 {
         (tokenIds, numNFTs) = allocateIds(
             _creator,
             _supplies,
-            _powerPack,
+            _rarityPack,
             _packId,
             _hash
         );
@@ -215,21 +215,21 @@ contract ERC1155ERC721 is SuperOperators, ERC1155, ERC721 {
     function allocateIds(
         address _creator,
         uint256[] memory _supplies,
-        bytes memory _powerPack,
+        bytes memory _rarityPack,
         uint48 _packId,
         bytes32 _hash
     ) internal returns (uint256[] memory tokenIds, uint16 numNFTs) {
         require(_supplies.length > 0, "supplies > 0");
         // do not need to check length as extra will not be considered : this is jsut a waste of gas
         // require(
-        //     _powerPack.length <= ((_supplies.length-1) / 4) + 1,
-        //     "power too many"
+        //     _rarityPack.length <= ((_supplies.length-1) / 4) + 1,
+        //     "rarity too many"
         // );
         (tokenIds, numNFTs) = generateTokenIds(_creator, _supplies, _packId);
         uint256 uriId = tokenIds[0] & URI_ID;
         require(uint256(metadataHash[uriId]) == 0, "id already used");
         metadataHash[uriId] = _hash;
-        powerPack[uriId] = _powerPack;
+        rarityPack[uriId] = _rarityPack;
     }
 
     function generateTokenIds(
@@ -516,7 +516,7 @@ contract ERC1155ERC721 is SuperOperators, ERC1155, ERC721 {
             numNFTPerAddress[_from] -= numNFTs;
         }
 
-        if (balTo != 0) { // if needed
+        if (bin != 0) { // if needed
             // Update storage of the last bin visited
             packedTokenBalance[_from][bin] = balFrom;
             packedTokenBalance[_to][bin] = balTo;
@@ -753,20 +753,20 @@ contract ERC1155ERC721 is SuperOperators, ERC1155, ERC721 {
         );
     }
     function name() external pure returns (string memory _name) {
-        return "ASSET NFT";
+        return "Sandbox's Asset";
     }
     function symbol() external pure returns (string memory _symbol) {
         return "ASSET";
     }
 
     // cannot be used to test existence, will return a rarity for non existing tokenId
-    function power(uint256 _tokenId) public view returns (uint256) {
-        bytes storage _powerPack = powerPack[_tokenId & URI_ID];
+    function rarity(uint256 _tokenId) public view returns (uint256) {
+        bytes storage _rarityPack = rarityPack[_tokenId & URI_ID];
         uint256 packIndex = _tokenId & PACK_INDEX;
-        if (packIndex / 4 >= _powerPack.length) {
+        if (packIndex / 4 >= _rarityPack.length) {
             return 0;
         } else {
-            uint8 pack = uint8(_powerPack[packIndex / 4]);
+            uint8 pack = uint8(_rarityPack[packIndex / 4]);
             uint8 i = (3 - uint8(packIndex % 4)) * 2;
             return (pack / (uint8(2)**i)) % 4;
         }
@@ -1046,7 +1046,7 @@ contract ERC1155ERC721 is SuperOperators, ERC1155, ERC721 {
         uint256 _tokenId,
         uint48 _packId,
         bytes32 _hash,
-        uint8 _newPower,
+        uint8 _newRarity,
         address _to,
         bytes calldata _data
     ) external returns(uint256) {
@@ -1060,7 +1060,7 @@ contract ERC1155ERC721 is SuperOperators, ERC1155, ERC721 {
         _burnERC721(msg.sender, _from, _tokenId);
 
         uint256 newTokenId = generateTokenId(_from, 1, _packId, 0);
-        _mint(_hash, 1, _newPower, msg.sender, _to, newTokenId, _data, false);
+        _mint(_hash, 1, _newRarity, msg.sender, _to, newTokenId, _data, false);
         emit AssetUpdate(_tokenId, newTokenId);
         return newTokenId;
     }

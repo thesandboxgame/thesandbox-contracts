@@ -17,11 +17,11 @@ contract TestBouncer is AssetBouncer {
         uint48 _packId,
         bytes32 _hash,
         uint32 _supply,
-        uint8 _power,
+        uint8 _rarity,
         address _owner
     ) public returns (uint256 tokenId) {
         return
-            asset.mint(_creator, _packId, _hash, _supply, _power, _owner, "");
+            asset.mint(_creator, _packId, _hash, _supply, _rarity, _owner, "");
     }
 
     function mintMultipleFor(
@@ -29,7 +29,7 @@ contract TestBouncer is AssetBouncer {
         uint48 _packId,
         bytes32 _hash,
         uint256[] memory _supplies,
-        bytes memory _powerPack,
+        bytes memory _rarityPack,
         address _owner
     ) public returns (uint256[] memory tokenIds) {
         return
@@ -38,7 +38,7 @@ contract TestBouncer is AssetBouncer {
                 _packId,
                 _hash,
                 _supplies,
-                _powerPack,
+                _rarityPack,
                 _owner,
                 ""
             );
@@ -49,7 +49,7 @@ contract TestBouncer is AssetBouncer {
         uint256 _tokenId,
         uint48 _packId,
         bytes32 _hash,
-        uint8 _newPower,
+        uint8 _newRarity,
         address _to
     ) external returns(uint256) {
         return
@@ -58,7 +58,7 @@ contract TestBouncer is AssetBouncer {
                 _tokenId,
                 _packId,
                 _hash,
-                _newPower,
+                _newRarity,
                 _to,
                 ""
             );

@@ -131,35 +131,35 @@ function runAssetTests(title, resetContracts, fixedID = 0) {
                 assert.equal(tokenURI, ipfsUrl + '/0' + '.json'); // TODO remove /0 for single pack ?
             });
 
-            t.test('minting a NFT with power', async () => {
+            t.test('minting a NFT with rarity', async () => {
                 const tokenId = await mintForAndReturnTokenId(contracts.GenesisBouncer, genesisMinter, ipfsHashString, 1, 3, creator, fixedID);
-                const power = await call(contracts.Asset, 'power', null, tokenId);
-                assert.equal(power, '3');
+                const rarity = await call(contracts.Asset, 'rarity', null, tokenId);
+                assert.equal(rarity, '3');
             });
 
-            t.test('minting multiple NFT with power', async () => {
+            t.test('minting multiple NFT with rarity', async () => {
                 const tokenIds = await mintMultipleForAndReturnTokenIds(contracts.GenesisBouncer, genesisMinter, ipfsHashString, [1, 1], [3, 2], creator, fixedID);
-                let power = await call(contracts.Asset, 'power', null, tokenIds[0]);
-                assert.equal(power, '3');
-                power = await call(contracts.Asset, 'power', null, tokenIds[1]);
-                assert.equal(power, '2');
+                let rarity = await call(contracts.Asset, 'rarity', null, tokenIds[0]);
+                assert.equal(rarity, '3');
+                rarity = await call(contracts.Asset, 'rarity', null, tokenIds[1]);
+                assert.equal(rarity, '2');
             });
 
-            t.test('minting multiple NFT with power', async () => {
-                const powers = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1];
-                const tokenIds = await mintMultipleForAndReturnTokenIds(contracts.GenesisBouncer, genesisMinter, ipfsHashString, [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], powers, creator, fixedID);
-                for (let i = 0; i < powers.length; i++) {
-                    const power = await call(contracts.Asset, 'power', null, tokenIds[i]);
-                    assert.equal(power, powers[i]);
+            t.test('minting multiple NFT with rarity', async () => {
+                const rarities = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1];
+                const tokenIds = await mintMultipleForAndReturnTokenIds(contracts.GenesisBouncer, genesisMinter, ipfsHashString, [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], rarities, creator, fixedID);
+                for (let i = 0; i < rarities.length; i++) {
+                    const rarity = await call(contracts.Asset, 'rarity', null, tokenIds[i]);
+                    assert.equal(rarity, rarities[i]);
                 }
             });
 
-            t.test('minting multiple NFT with power', async () => {
-                const powers = [0, 0, 0, 1, 0, 0, 2, 0, 3, 1, 2, 1, 1, 0, 0, 0, 0];
-                const tokenIds = await mintMultipleForAndReturnTokenIds(contracts.GenesisBouncer, genesisMinter, ipfsHashString, [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], powers, creator, fixedID);
-                for (let i = 0; i < powers.length; i++) {
-                    const power = await call(contracts.Asset, 'power', null, tokenIds[i]);
-                    assert.equal(power, powers[i]);
+            t.test('minting multiple NFT with rarity', async () => {
+                const rarities = [0, 0, 0, 1, 0, 0, 2, 0, 3, 1, 2, 1, 1, 0, 0, 0, 0];
+                const tokenIds = await mintMultipleForAndReturnTokenIds(contracts.GenesisBouncer, genesisMinter, ipfsHashString, [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], rarities, creator, fixedID);
+                for (let i = 0; i < rarities.length; i++) {
+                    const rarity = await call(contracts.Asset, 'rarity', null, tokenIds[i]);
+                    assert.equal(rarity, rarities[i]);
                 }
             });
         });
@@ -334,12 +334,12 @@ function runAssetTests(title, resetContracts, fixedID = 0) {
                 );
             });
 
-            t.test('minting multiple NFT with power', async () => {
-                const powers = [0, 0, 0, 1, 0, 0, 2, 0, 3, 1, 2, 1, 1, 0, 3, 0, 0];
-                const tokenIds = await mintMultipleForAndReturnTokenIds(contracts.GenesisBouncer, genesisMinter, ipfsHashString, [10, 23, 11, 11, 11, 11, 11, 12, 8, 1, 1, 1, 1, 1, 1, 1, 1], powers, creator, fixedID);
-                for (let i = 0; i < powers.length; i++) {
-                    const power = await call(contracts.Asset, 'power', null, tokenIds[i]);
-                    assert.equal(power, powers[i]);
+            t.test('minting multiple NFT with rarity', async () => {
+                const rarities = [0, 0, 0, 1, 0, 0, 2, 0, 3, 1, 2, 1, 1, 0, 3, 0, 0];
+                const tokenIds = await mintMultipleForAndReturnTokenIds(contracts.GenesisBouncer, genesisMinter, ipfsHashString, [10, 23, 11, 11, 11, 11, 11, 12, 8, 1, 1, 1, 1, 1, 1, 1, 1], rarities, creator, fixedID);
+                for (let i = 0; i < rarities.length; i++) {
+                    const rarity = await call(contracts.Asset, 'rarity', null, tokenIds[i]);
+                    assert.equal(rarity, rarities[i]);
                 }
             });
         });
@@ -523,15 +523,15 @@ function runAssetTests(title, resetContracts, fixedID = 0) {
                 await expectThrow(call(contracts.Asset, 'ownerOf', null, tokenId));
             });
 
-            t.test('update token use new power value', async (t) => {
+            t.test('update token use new rarity value', async (t) => {
                 const tokenId = await mintAndReturnTokenId(contracts.AssetBouncer, ipfsHashString, 1, creator, fixedID);
-                const oldPower = await call(contracts.Asset, 'power', null, tokenId);
-                assert.equal(oldPower, '0');
+                const oldRarity = await call(contracts.Asset, 'rarity', null, tokenId);
+                assert.equal(oldRarity, '0');
                 await tx(Bouncer, 'updateERC721', {from: creator, gas}, creator, tokenId, fixedID + 1, ipfsHashString, 2, creator);
 
                 const newTokenId = generateTokenId(creator, 1, 1, fixedID + 1);
-                const power = await call(contracts.Asset, 'power', null, newTokenId);
-                assert.equal(power, '2');
+                const rarity = await call(contracts.Asset, 'rarity', null, newTokenId);
+                assert.equal(rarity, '2');
             });
 
             t.test('cant update token you do not own', async (t) => {

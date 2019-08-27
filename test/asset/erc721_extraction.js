@@ -285,16 +285,16 @@ function runERC721ExtractionTests(title, resetContracts) {
             assert.equal(newURI, uri);
         });
 
-        t.test('extracted token should have same rarity/power', async () => {
+        t.test('extracted token should have same rarity', async () => {
             const tokenId = await mintForAndReturnTokenId(contracts.GenesisBouncer, genesisMinter, ipfsHashString, 10, 3, creator);
-            const power = await call(contracts.Asset, 'power', null, tokenId);
-            assert.equal(power, '3');
+            const rarity = await call(contracts.Asset, 'rarity', null, tokenId);
+            assert.equal(rarity, '3');
             assert.equal(tokenId, generateTokenId(creator, 10, 1, 0));
             const receipt = await tx(contracts.Asset, 'extractERC721From', {from: creator, gas}, creator, tokenId, creator);
             const eventsMatching = await getEventsFromReceipt(contracts.Asset, ExtractionEvent, receipt);
             const nftTokenId = eventsMatching[0].returnValues[1];
-            const newPower = await call(contracts.Asset, 'power', null, nftTokenId);
-            assert.equal(newPower, power);
+            const newRarity = await call(contracts.Asset, 'rarity', null, nftTokenId);
+            assert.equal(newRarity, rarity);
         });
     });
 }

@@ -47,8 +47,8 @@ function mint(contract, ipfsHash, supply, creator, fixedID = 0) {
     return contract.methods.mint(creator, 0, zeroAddress, fixedID, ipfsHash, supply, creator, emptyBytes).send({from: creator, gas});
 }
 
-function mintFor(contract, operator, ipfsHash, supply, power, creator, fixedID = 0) {
-    return contract.methods.mintFor(creator, fixedID, ipfsHash, supply, power, creator).send({from: operator, gas});
+function mintFor(contract, operator, ipfsHash, supply, rarity, creator, fixedID = 0) {
+    return contract.methods.mintFor(creator, fixedID, ipfsHash, supply, rarity, creator).send({from: operator, gas});
 }
 
 async function mintAndReturnTokenId(contract, ipfsHash, supply, creator, fixedID = 0) {
@@ -57,8 +57,8 @@ async function mintAndReturnTokenId(contract, ipfsHash, supply, creator, fixedID
     return getSingleId(receipt);
 }
 
-async function mintForAndReturnTokenId(contract, operator, ipfsHash, supply, power, creator, fixedID = 0) {
-    const receipt = await mintFor(contract, operator, ipfsHash, supply, power, creator, fixedID);
+async function mintForAndReturnTokenId(contract, operator, ipfsHash, supply, rarity, creator, fixedID = 0) {
+    const receipt = await mintFor(contract, operator, ipfsHash, supply, rarity, creator, fixedID);
     // console.log(JSON.stringify(receipt, null, '  '));
     return getSingleId(receipt);
 }
@@ -67,25 +67,25 @@ function mintMultiple(contract, uri, supplies, creator, fixedID = 0) {
     return contract.methods.mintMultiple(creator, 0, zeroAddress, fixedID, uri, supplies, creator, emptyBytes).send({from: creator, gas});
 }
 
-function mintMultipleFor(contract, operator, uri, supplies, powers, creator, fixedID = 0) {
-    let powerPack = '0x';
-    for (let i = 0; i < powers.length; i += 4) {
+function mintMultipleFor(contract, operator, uri, supplies, rarities, creator, fixedID = 0) {
+    let rarityPack = '0x';
+    for (let i = 0; i < rarities.length; i += 4) {
         let byteV = 0;
-        for (let j = i; j < powers.length && j < i + 4; j++) {
-            if (powers[j] > 3) {
-                throw new Error('power > 3');
+        for (let j = i; j < rarities.length && j < i + 4; j++) {
+            if (rarities[j] > 3) {
+                throw new Error('rarity > 3');
             }
             const p = Math.pow(2, ((3 - (j - i)) * 2));
-            byteV += (powers[j] * p);
+            byteV += (rarities[j] * p);
         }
         let s = byteV.toString(16);
         if (s.length === 1) {
             s = '0' + s;
         }
-        powerPack += s;
+        rarityPack += s;
     }
-    // console.log({powerPack});
-    return contract.methods.mintMultipleFor(creator, fixedID, uri, supplies, powerPack, creator).send({from: operator, gas});
+    // console.log({rarityPack});
+    return contract.methods.mintMultipleFor(creator, fixedID, uri, supplies, rarityPack, creator).send({from: operator, gas});
 }
 
 async function mintTokensIncludingNFTWithSameURI(contract, num, uri, supply, numNFTs, creator, fixedID = 0) {
@@ -119,8 +119,8 @@ async function mintMultipleAndReturnTokenIds(contract, uri, supplies, creator, f
     return getBatchIds(receipt);
 }
 
-async function mintMultipleForAndReturnTokenIds(contract, operator, uri, supplies, powers, creator, fixedID = 0) {
-    const receipt = await mintMultipleFor(contract, operator, uri, supplies, powers, creator, fixedID);
+async function mintMultipleForAndReturnTokenIds(contract, operator, uri, supplies, rarities, creator, fixedID = 0) {
+    const receipt = await mintMultipleFor(contract, operator, uri, supplies, rarities, creator, fixedID);
     return getBatchIds(receipt);
 }
 
